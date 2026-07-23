@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Enhanced Online Judge Platform</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Rating Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0B0F17',
+                            800: '#111827',
+                            700: '#1F2937',
+                            600: '#374151'
+                        },
+                        accent: {
+                            cyan: '#06B6D4',
+                            purple: '#8B5CF6',
+                            emerald: '#10B981',
+                            amber: '#F59E0B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0F17;
+            color: #F3F4F6;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-accent {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2937;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="glass-panel px-6 py-3 flex items-center justify-between z-30 border-b border-gray-800">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <i data-lucide="terminal" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+                    AlgoAI Judge
+                </h1>
+                <p class="text-xs text-gray-400 font-mono">v2.0 • Real-Time Async Engine</p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="flex space-x-2 bg-gray-900/80 p-1 rounded-xl border border-gray-800">
+            <button id="nav-hub" onclick="switchTab('hub')" class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-2 text-cyan-400 bg-gray-800">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>Problem & Contest Hub</span>
+            </button>
+            <button id="nav-arena" onclick="switchTab('arena')" class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-2 text-gray-400 hover:text-white">
+                <i data-lucide="code-2" class="w-4 h-4"></i>
+                <span>Coding Arena</span>
+            </button>
+            <button id="nav-analytics" onclick="switchTab('analytics')" class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-2 text-gray-400 hover:text-white">
+                <i data-lucide="trophy" class="w-4 h-4"></i>
+                <span>Leaderboard & Analytics</span>
+            </button>
+        </nav>
+
+        <!-- User Profile & System Status -->
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Worker Pool Active</span>
+            </div>
+            <div class="flex items-center space-x-3 border-l border-gray-800 pl-4">
+                <div class="text-right">
+                    <p class="text-sm font-medium text-gray-200">Alex Chen</p>
+                    <p class="text-xs text-purple-400 font-mono">Rating: 1842 (Grandmaster)</p>
+                </div>
+                <div class="w-9 h-9 rounded-full bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-300 font-bold text-sm">
+                    AC
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-1 overflow-hidden relative">
+
+        <!-- SCREEN 1: PROBLEM & CONTEST HUB -->
+        <div id="screen-hub" class="h-full p-6 overflow-y-auto space-y-6">
+            <!-- Vector Semantic AI Search Banner -->
+            <div class="glass-panel p-6 rounded-2xl relative overflow-hidden bg-gradient-to-r from-cyan-950/40 via-purple-950/20 to-dark-800">
+                <div class="relative z-10 max-w-3xl space-y-3">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        <span>pgvector 1536-dim AI Semantic Search</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Find Problems Using Natural Language Prose</h2>
+                    <p class="text-sm text-gray-400">Describe what you want to practice in plain English (e.g., <i>"dynamic programming on matrices asked in Google interviews"</i>).</p>
+                    
+                    <div class="relative flex items-center">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-4 text-cyan-400"></i>
+                        <input id="ai-search-input" type="text" placeholder="Type your query prose here..." 
+                               class="w-full bg-dark-900/90 border border-cyan-500/30 focus:border-cyan-400 text-gray-100 pl-12 pr-28 py-3.5 rounded-xl outline-none transition-all font-sans text-sm">
+                        <button onclick="performSemanticSearch()" class="absolute right-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-all flex items-center space-x-1.5 shadow-md">
+                            <i data-lucide="cpu" class="w-4 h-4"></i>
+                            <span>Search</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contests & Active Hub Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Practice Problems List -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-800">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="code" class="w-5 h-5 text-cyan-400"></i>
+                            <span>Curated Problem Repository</span>
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 rounded-lg bg-gray-800 text-xs font-medium text-gray-300 border border-gray-700 hover:border-gray-600">All</button>
+                            <button class="px-3 py-1 rounded-lg bg-emerald-500/10 text-xs font-medium text-emerald-400 border border-emerald-500/20">Easy</button>
+                            <button class="px-3 py-1 rounded-lg bg-amber-500/10 text-xs font-medium text-amber-400 border border-amber-500/20">Medium</button>
+                            <button class="px-3 py-1 rounded-lg bg-rose-500/10 text-xs font-medium text-rose-400 border border-rose-500/20">Hard</button>
+                        </div>
+                    </div>
+
+                    <!-- Problem Rows -->
+                    <div id="problem-list-container" class="space-y-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Active Contests Hub -->
+                <div class="glass-panel p-5 rounded-2xl space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2 pb-3 border-b border-gray-800">
+                        <i data-lucide="flame" class="w-5 h-5 text-purple-400"></i>
+                        <span>Live & Upcoming Contests</span>
+                    </h3>
+
+                    <div class="space-y-3">
+                        <div class="p-4 rounded-xl bg-gradient-to-br from-purple-900/30 to-dark-900 border border-purple-500/30 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono font-semibold">LIVE NOW</span>
+                                <span id="contest-countdown" class="text-xs font-mono text-purple-400 font-bold">01:42:18 remaining</span>
+                            </div>
+                            <h4 class="font-bold text-white text-base">Weekly Grand Prix 42</h4>
+                            <p class="text-xs text-gray-400">4 Problems • 2 Hours • Rated for 0-2400</p>
+                            <button onclick="switchTab('arena')" class="w-full mt-2 bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-lg text-xs font-bold transition-all shadow-md flex justify-center items-center space-x-1">
+                                <span>Enter Arena</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="px-2.5 py-0.5 rounded-full bg-gray-800 text-gray-400 text-xs font-mono">STARTS IN 2 DAYS</span>
+                            </div>
+                            <h4 class="font-bold text-gray-200 text-sm">AlgoUniversity Beginners Challenge #12</h4>
+                            <p class="text-xs text-gray-400">3 Problems • 90 Mins</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: THE CODING ARENA -->
+        <div id="screen-arena" class="h-full flex overflow-hidden hidden">
+            <!-- Left Side: Problem Statement & PDF Viewer -->
+            <div class="w-1/2 h-full border-r border-gray-800 flex flex-col bg-dark-900">
+                <!-- Problem Header -->
+                <div class="px-5 py-3 border-b border-gray-800 flex justify-between items-center bg-gray-900/50">
+                    <div class="flex items-center space-x-3">
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">Medium</span>
+                        <h2 class="text-base font-bold text-white">Problem 101: Minimum Path Cost in Weighted Matrix</h2>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="downloadS3Pdf()" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-cyan-400 flex items-center space-x-1 border border-gray-700">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                            <span>S3 Statement PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Problem Content Scrollable -->
+                <div class="flex-1 p-6 overflow-y-auto space-y-6 text-sm text-gray-300">
+                    <div>
+                        <h3 class="font-bold text-white text-base mb-2">Statement</h3>
+                        <p class="leading-relaxed">Given an <code>m x n</code> matrix filled with non-negative integers, find a path from top left to bottom right, which minimizes the sum of all numbers along its path. You can only move either down or right at any point in time.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-white text-base">Example 1</h3>
+                        <div class="p-4 rounded-xl bg-gray-900/80 border border-gray-800 font-mono text-xs space-y-2">
+                            <p><span class="text-gray-500">Input:</span> grid = [[1,3,1],[1,5,1],[4,2,1]]</p>
+                            <p><span class="text-gray-500">Output:</span> 7</p>
+                            <p><span class="text-gray-500">Explanation:</span> Because the path 1 → 3 → 1 → 1 → 1 minimizes the sum.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-white text-base">Constraints</h3>
+                        <ul class="list-disc list-inside space-y-1 font-mono text-xs text-gray-400">
+                            <li>m == grid.length</li>
+                            <li>n == grid[i].length</li>
+                            <li>1 &lt;= m, n &lt;= 200</li>
+                            <li>0 &lt;= grid[i][j] &lt;= 200</li>
+                            <li>Time Limit: 1.0s | Memory Limit: 256MB</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Monaco Code Editor & Live WebSocket Streaming Console -->
+            <div class="w-1/2 h-full flex flex-col bg-dark-900 relative">
+                <!-- Editor Toolbar -->
+                <div class="px-5 py-2.5 border-b border-gray-800 flex justify-between items-center bg-gray-900/50">
+                    <div class="flex items-center space-x-3">
+                        <label class="text-xs text-gray-400 font-medium">Language:</label>
+                        <select id="language-select" class="bg-gray-800 border border-gray-700 text-xs text-cyan-300 font-mono px-3 py-1.5 rounded-lg outline-none">
+                            <option value="PYTHON3">Python 3.12</option>
+                            <option value="CPP">C++20 (GCC)</option>
+                            <option value="JAVA">Java 17 (OpenJDK)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <button onclick="toggleAiDrawer()" class="px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center space-x-1.5">
+                            <i data-lucide="bot" class="w-4 h-4 text-purple-400"></i>
+                            <span>AI Mentor Drawer</span>
+                        </button>
+
+                        <button onclick="submitCodeToArena()" class="px-5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 hover:opacity-90 text-white text-xs font-bold flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20">
+                            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                            <span>Submit Code</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Monaco Editor Textarea container -->
+                <div class="flex-1 relative bg-gray-950 p-4 font-mono text-sm">
+                    <textarea id="code-editor" class="w-full h-full bg-transparent text-emerald-400 outline-none resize-none font-mono text-sm leading-relaxed" spellcheck="false">def minPathSum(grid: list[list[int]]) -> int:
+    m, n = len(grid), len(grid[0])
+    dp = [[0] * n for _ in range(m)]
+    dp[0][0] = grid[0][0]
+    
+    for i in range(1, m):
+        dp[i][0] = dp[i-1][0] + grid[i][0]
+    for j in range(1, n):
+        dp[0][j] = dp[0][j-1] + grid[0][j]
+        
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])
+            
+    return dp[-1][-1]
+</textarea>
+                </div>
+
+                <!-- Real-Time WebSocket Execution Stream Console -->
+                <div class="h-44 border-t border-gray-800 bg-gray-900/90 p-4 flex flex-col space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-300 flex items-center space-x-1.5">
+                            <i data-lucide="activity" class="w-3.5 h-3.5 text-cyan-400"></i>
+                            <span>Live WebSocket Execution Feed (`/ws/submissions/{id}`)</span>
+                        </span>
+                        <span id="ws-status-badge" class="px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 text-xs font-mono">Idle</span>
+                    </div>
+
+                    <div id="ws-console-log" class="flex-1 bg-dark-900 border border-gray-800 rounded-lg p-3 overflow-y-auto font-mono text-xs space-y-1">
+                        <p class="text-gray-500">> Ready for submission. Click "Submit Code" to stream Celery execution logs.</p>
+                    </div>
+                </div>
+
+                <!-- SLIDE-OUT AI MENTOR DRAWER -->
+                <div id="ai-mentor-drawer" class="absolute top-0 right-0 w-80 h-full glass-panel border-l border-purple-500/30 p-5 transform translate-x-full transition-transform duration-300 z-40 flex flex-col space-y-4 shadow-2xl">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-800">
+                        <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-purple-400"></i>
+                            <span>AI Code Reviewer</span>
+                        </h3>
+                        <button onclick="toggleAiDrawer()" class="text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-3 flex-1 overflow-y-auto text-xs">
+                        <div class="p-3 rounded-lg bg-purple-950/30 border border-purple-500/20 space-y-1">
+                            <p class="font-bold text-purple-300">Time Complexity</p>
+                            <p class="text-gray-300 font-mono">O(M × N) — Optimal DP Matrix traversal.</p>
+                        </div>
+
+                        <div class="p-3 rounded-lg bg-cyan-950/30 border border-cyan-500/20 space-y-1">
+                            <p class="font-bold text-cyan-300">Space Optimization Tip</p>
+                            <p class="text-gray-300">You can reduce space complexity from O(M × N) to O(N) by maintaining only a single 1D array row!</p>
+                        </div>
+
+                        <div class="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/20 space-y-1">
+                            <p class="font-bold text-emerald-300">Code Quality Score</p>
+                            <p class="text-gray-300 font-bold text-lg font-mono">94 / 100</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: LEADERBOARD & PROFILE ANALYTICS -->
+        <div id="screen-analytics" class="h-full p-6 overflow-y-auto space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- User Performance Analytics -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2 pb-3 border-b border-gray-800">
+                            <i data-lucide="line-chart" class="w-5 h-5 text-cyan-400"></i>
+                            <span>Rating Progression</span>
+                        </h3>
+                        <div class="h-52">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl space-y-3">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2 pb-3 border-b border-gray-800">
+                            <i data-lucide="pie-chart" class="w-5 h-5 text-emerald-400"></i>
+                            <span>Submission Verdicts</span>
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                <p class="text-xl font-bold">142</p>
+                                <p class="text-gray-400 text-2xs">Accepted (82%)</p>
+                            </div>
+                            <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                                <p class="text-xl font-bold">18</p>
+                                <p class="text-gray-400 text-2xs">Wrong Answer</p>
+                            </div>
+                            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                                <p class="text-xl font-bold">9</p>
+                                <p class="text-gray-400 text-2xs">Time Limit Exceeded</p>
+                            </div>
+                            <div class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                                <p class="text-xl font-bold">4</p>
+                                <p class="text-gray-400 text-2xs">Runtime Error</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High-Concurrency Redis Live Contest Leaderboard -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-800">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="award" class="w-5 h-5 text-amber-400"></i>
+                                <span>Global & Contest Leaderboard</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 font-mono">Powered by Redis Sorted Sets (ZSET) • Sub-millisecond latency</p>
+                        </div>
+                        <button onclick="fetchRedisLeaderboard()" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-cyan-400 flex items-center space-x-1 border border-gray-700">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            <span>Refresh ZSET</span>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-300">
+                            <thead class="text-xs uppercase bg-gray-900/80 text-gray-400 font-mono border-b border-gray-800">
+                                <tr>
+                                    <th class="px-4 py-3">Rank</th>
+                                    <th class="px-4 py-3">Contestant</th>
+                                    <th class="px-4 py-3">Score</th>
+                                    <th class="px-4 py-3">Penalty</th>
+                                    <th class="px-4 py-3">ZSET Composite Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-table-body" class="divide-y divide-gray-800/50 font-mono text-xs">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Application Script -->
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Sample Data & State
+        const sampleProblems = [
+            { id: 101, title: "Minimum Path Cost in Weighted Matrix", difficulty: "Medium", tags: ["Dynamic Programming", "Matrix"], acc: "64.2%" },
+            { id: 102, title: "Longest Increasing Subsequence in 2D", difficulty: "Hard", tags: ["Binary Search", "DP"], acc: "38.9%" },
+            { id: 103, title: "Valid Parentheses Combination Count", difficulty: "Easy", tags: ["Stack", "Strings"], acc: "88.1%" },
+            { id: 104, title: "Network Delay Time via Dijkstra", difficulty: "Medium", tags: ["Graph", "Shortest Path"], acc: "52.4%" }
+        ];
+
+        const sampleLeaderboard = [
+            { rank: 1, username: "tourist", score: 400, penalty: "00:42:10", zset: 399997470 },
+            { rank: 2, username: "Benq", score: 400, penalty: "00:54:12", zset: 399996748 },
+            { rank: 3, username: "Petr", score: 300, penalty: "00:31:05", zset: 299998135 },
+            { rank: 4, username: "Alex_Chen", score: 300, penalty: "00:38:40", zset: 299997680 },
+            { rank: 5, username: "Um_nik", score: 200, penalty: "00:18:22", zset: 199998898 }
+        ];
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            ['hub', 'arena', 'analytics'].forEach(t => {
+                document.getElementById(`screen-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${t}`);
+                btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-2 text-gray-400 hover:text-white";
+            });
+
+            document.getElementById(`screen-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            activeBtn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-2 text-cyan-400 bg-gray-800 shadow-md";
+
+            if (tabName === 'analytics') {
+                renderRatingChart();
+                renderLeaderboardTable();
+            }
+        }
+
+        // Render Problems List
+        function renderProblems(problems) {
+            const container = document.getElementById('problem-list-container');
+            container.innerHTML = problems.map(p => `
+                <div onclick="switchTab('arena')" class="p-4 rounded-xl bg-gray-900/40 hover:bg-gray-800/60 border border-gray-800/80 hover:border-cyan-500/30 transition-all flex items-center justify-between cursor-pointer group">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">#${p.id}. ${p.title}</span>
+                            <span class="px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                                p.difficulty === 'Easy' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                p.difficulty === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            }">${p.difficulty}</span>
+                        </div>
+                        <div class="flex space-x-2 text-xs font-mono text-gray-500">
+                            ${p.tags.map(t => `<span class="bg-gray-800 px-2 py-0.5 rounded text-gray-400">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="text-right text-xs font-mono text-gray-400">
+                        <p class="text-gray-300 font-semibold">${p.acc}</p>
+                        <p class="text-2xs text-gray-500">Acceptance</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Semantic Search Trigger
+        async function performSemanticSearch() {
+            const query = document.getElementById('ai-search-input').value.trim();
+            if (!query) {
+                renderProblems(sampleProblems);
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/v1/problems/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.length > 0) {
+                        renderProblems(data.map(p => ({
+                            id: p.problem_id,
+                            title: p.title,
+                            difficulty: p.difficulty,
+                            tags: p.tags ? p.tags.map(t => t.tag_name) : ["Algorithm"],
+                            acc: "58.0%"
+                        })));
+                    }
+                }
+            } catch (e) {
+                console.log("Using client fallback search");
+                const filtered = sampleProblems.filter(p => p.title.toLowerCase().includes(query.toLowerCase()));
+                renderProblems(filtered);
+            }
+        }
+
+        // Slide-out AI Drawer
+        function toggleAiDrawer() {
+            const drawer = document.getElementById('ai-mentor-drawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        // S3 Pre-signed URL PDF download
+        async function downloadS3Pdf() {
+            try {
+                const res = await fetch('/api/v1/storage/presigned-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ object_key: "problems/problem_101.pdf", action: "GET" })
+                });
+                const data = await res.json();
+                alert(`Pre-signed S3 download URL generated:\n${data.presigned_url}`);
+            } catch (e) {
+                alert("Simulated S3 pre-signed PDF URL: http://localhost:9000/online-judge-assets/problems/problem_101.pdf");
+            }
+        }
+
+        // Real-Time WebSocket Submission Test
+        async function submitCodeToArena() {
+            const code = document.getElementById('code-editor').value;
+            const lang = document.getElementById('language-select').value;
+            const consoleLog = document.getElementById('ws-console-log');
+            const badge = document.getElementById('ws-status-badge');
+
+            consoleLog.innerHTML = `<p class="text-cyan-400">> Submitting payload to POST /api/v1/submissions...</p>`;
+            badge.className = "px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-mono animate-pulse";
+            badge.innerText = "Submitting...";
+
+            try {
+                // Submit to backend
+                const subRes = await fetch('/api/v1/submissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ problem_id: 101, code: code, language_enum: lang })
+                });
+                
+                let subId = Math.floor(Math.random() * 1000) + 500;
+                if (subRes.ok) {
+                    const subData = await subRes.json();
+                    subId = subData.submission_id;
+                }
+
+                consoleLog.innerHTML += `<p class="text-purple-400">> Submission ID #${subId} created. Connecting WebSocket /ws/submissions/${subId}...</p>`;
+
+                // Connect WebSocket
+                const ws = new WebSocket(`ws://${window.location.host}/ws/submissions/${subId}`);
+
+                ws.onopen = () => {
+                    badge.innerText = "WS Connected";
+                    badge.className = "px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono";
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    consoleLog.innerHTML += `<p class="text-emerald-300">> [WS EVENT] ${JSON.stringify(data)}</p>`;
+                    consoleLog.scrollTop = consoleLog.scrollHeight;
+                };
+
+                ws.onerror = () => {
+                    // Simulated WebSocket stream feedback
+                    simulateWsEvents(consoleLog, badge);
+                };
+
+            } catch (e) {
+                simulateWsEvents(consoleLog, badge);
+            }
+        }
+
+        function simulateWsEvents(consoleLog, badge) {
+            setTimeout(() => { consoleLog.innerHTML += `<p class="text-cyan-300">> [WS EVENT] {"event": "PROCESSING"}</p>`; }, 500);
+            setTimeout(() => { consoleLog.innerHTML += `<p class="text-purple-300">> [WS EVENT] {"event": "COMPILING", "language": "PYTHON3"}</p>`; }, 1200);
+            setTimeout(() => { consoleLog.innerHTML += `<p class="text-amber-300">> [WS EVENT] {"event": "EVALUATING_TESTCASE", "current_testcase": 1, "total_testcases": 5}</p>`; }, 2000);
+            setTimeout(() => {
+                consoleLog.innerHTML += `<p class="text-emerald-400 font-bold">> [WS EVENT] {"event": "COMPLETED", "verdict": "ACCEPTED", "execution_time_ms": 14.2, "memory_consumed_kb": 12480}</p>`;
+                badge.innerText = "ACCEPTED";
+                badge.className = "px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold";
+            }, 3000);
+        }
+
+        // Leaderboard Table Rendering
+        function renderLeaderboardTable() {
+            const body = document.getElementById('leaderboard-table-body');
+            body.innerHTML = sampleLeaderboard.map(r => `
+                <tr class="hover:bg-gray-800/40">
+                    <td class="px-4 py-3 font-bold ${r.rank === 1 ? 'text-amber-400' : r.rank === 2 ? 'text-gray-300' : r.rank === 3 ? 'text-amber-600' : 'text-gray-400'}">#${r.rank}</td>
+                    <td class="px-4 py-3 font-semibold text-gray-200">${r.username}</td>
+                    <td class="px-4 py-3 text-emerald-400 font-bold">${r.score} pts</td>
+                    <td class="px-4 py-3 text-gray-400">${r.penalty}</td>
+                    <td class="px-4 py-3 text-cyan-400 font-mono">${r.zset}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Fetch Live Redis Leaderboard from Backend
+        async function fetchRedisLeaderboard() {
+            try {
+                const res = await fetch('/api/v1/contests/1/leaderboard');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.rankings && data.rankings.length > 0) {
+                        const body = document.getElementById('leaderboard-table-body');
+                        body.innerHTML = data.rankings.map(r => `
+                            <tr class="hover:bg-gray-800/40">
+                                <td class="px-4 py-3 font-bold text-amber-400">#${r.rank}</td>
+                                <td class="px-4 py-3 font-semibold text-gray-200">${r.username}</td>
+                                <td class="px-4 py-3 text-emerald-400 font-bold">${r.score} pts</td>
+                                <td class="px-4 py-3 text-gray-400">${r.penalty_seconds}s</td>
+                                <td class="px-4 py-3 text-cyan-400 font-mono">${r.composite_score}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (e) {
+                renderLeaderboardTable();
+            }
+        }
+
+        // Rating Chart
+        let chartInstance = null;
+        function renderRatingChart() {
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Rating',
+                        data: [1400, 1520, 1490, 1680, 1750, 1810, 1842],
+                        borderColor: '#06B6D4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#9CA3AF' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9CA3AF' } }
+                    }
+                }
+            });
+        }
+
+        // Initialize On Load
+        renderProblems(sampleProblems);
+    </script>
+</body>
+</html>

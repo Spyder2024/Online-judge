@@ -72,3 +72,13 @@ async def delete_cache(key: str) -> int:
     """
     client = await get_redis()
     return await client.delete(key)
+
+
+async def publish_message(channel: str, message: Any) -> int:
+    """
+    Publish a JSON-serialized message to a Redis Pub/Sub channel.
+    """
+    client = await get_redis()
+    serialized = json.dumps(message) if not isinstance(message, str) else message
+    return await client.publish(channel, serialized)
+

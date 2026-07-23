@@ -64,8 +64,16 @@ def create_application() -> FastAPI:
     # Register unified global exception handlers
     register_exception_handlers(app)
 
-    # Include v1 API routes
+    from fastapi.responses import Response
+    from app.api.v1.websocket import router as ws_router
+
+    # Include v1 API routes & root level WebSocket router
     app.include_router(api_router, prefix=settings.API_V1_STR)
+    app.include_router(ws_router)
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        return Response(status_code=204)
 
     @app.get("/health", tags=["Health & Monitoring"])
     async def health_check() -> dict[str, str]:
@@ -73,6 +81,19 @@ def create_application() -> FastAPI:
         Liveness and readiness probe endpoint.
         """
         return {"status": "ok", "environment": settings.ENVIRONMENT, "version": "1.0.0"}
+
+    # Mount static frontend application UI
+    from pathlib import Path
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+    
+    frontend_path = Path(__file__).parent / "frontend"
+    if frontend_path.exists():
+        app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+        
+        @app.get("/", include_in_schema=False)
+        async def serve_index():
+            return FileResponse(frontend_path / "index.html")
 
     return app
 

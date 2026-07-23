@@ -81,4 +81,17 @@ assert "ix_hints_hint_embedding_hnsw" in migration_code, "Hint embedding HNSW in
 assert "vector_cosine_ops" in migration_code, "Cosine distance operator missing"
 
 print("  [OK] Alembic migration verified for extension creation, 13 tables, and HNSW cosine indexes.")
+
+# 4. Import Verification
+print("\n[4/4] Testing Live Import of main.py and FastAPI Routers...")
+try:
+    sys.path.insert(0, str(root_dir))
+    import importlib
+    main_mod = importlib.import_module("main")
+    assert hasattr(main_mod, "app"), "main.py has no app object"
+    print("  [OK] main.app successfully imported without any ImportError or AttributeError!")
+except Exception as e:
+    print(f"  [FAIL] Error importing main.py: {e}")
+    sys.exit(1)
+
 print("\n=== All Verification Checks Passed Successfully! ===")

@@ -33,6 +33,9 @@ class ContestResponse(ContestBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+ContestDetailResponse = ContestResponse
+
+
 class LeaderboardEntryResponse(BaseModel):
     leaderboard_id: int
     contest_id: int
