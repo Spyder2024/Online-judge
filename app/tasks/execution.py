@@ -138,4 +138,9 @@ def evaluate_submission_task(self, task_id: str, submission_id: int) -> Dict[str
     Dispatched to the `q_compile_exec` queue on high-CPU nodes.
     """
     asyncio.run(_evaluate_submission_async(task_id, submission_id))
+    
+    # Auto-trigger Phase 4 AI Workflow in q_ai_analysis queue
+    from app.tasks.ai import analyze_submission_task
+    analyze_submission_task.apply_async(args=[task_id, submission_id], queue="q_ai_analysis")
+    
     return {"status": "Evaluation completed", "submission_id": submission_id}

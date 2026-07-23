@@ -72,6 +72,7 @@ class SandboxEngine:
             "--cpus=1.0",
             "--pids-limit=64",
             "--read-only",
+            "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
             "-v", f"{host_path}:/workspace",
             "-w", "/workspace",
             "-i" # Keep STDIN open even if not attached

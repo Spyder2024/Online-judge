@@ -35,9 +35,9 @@ class Submission(Base, TimestampMixin):
     submission_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True
     )
-    user_id: Mapped[int] = mapped_column(
+    user_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("users.user_id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True,
     )
     problem_id: Mapped[int] = mapped_column(
@@ -62,7 +62,7 @@ class Submission(Base, TimestampMixin):
     )
 
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="submissions")
+    user: Mapped[Optional["User"]] = relationship("User", back_populates="submissions")
     problem: Mapped["Problem"] = relationship("Problem", back_populates="submissions")
     ai_review: Mapped[Optional["AIReview"]] = relationship(
         "AIReview", back_populates="submission", uselist=False, cascade="all, delete-orphan"

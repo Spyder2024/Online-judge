@@ -26,9 +26,7 @@ async def submission_websocket_endpoint(websocket: WebSocket, submission_id: int
         await pubsub.subscribe(channel_name)
         logger.info("Subscribed to Redis channel", channel=channel_name)
         
-        while True:
-            # Non-blocking fetch with timeout to allow handling disconnects
-            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+        async for message in pubsub.listen():
             if message and message["type"] == "message":
                 data_str = message["data"]
                 try:
@@ -38,12 +36,11 @@ async def submission_websocket_endpoint(websocket: WebSocket, submission_id: int
                 
                 await websocket.send_json(payload)
                 
-                # Check if final verdict reached to close stream cleanly if desired
-                if isinstance(payload, dict) and payload.get("event") == "COMPLETED":
-                    await websocket.send_json({"event": "STREAM_FINISHED"})
-                    break
-
-            await asyncio.sleep(0.05)
+                # Check if final event reached to close stream cleanly
+                if isinstance(payload, dict) and payload.get("event") in ("COMPLETED", "FAILED", "AI_REVIEW_COMPLETED"):
+                    if payload.get("event") == "AI_REVIEW_COMPLETED":
+                        await websocket.send_json({"event": "STREAM_FINISHED"})
+                        break
 
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected", submission_id=submission_id)
