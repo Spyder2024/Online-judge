@@ -27,14 +27,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await init_redis_pool()
         logger.info("Redis async connection pool initialized successfully.")
     except Exception as e:
-        logger.error("Failed to initialize Redis pool during startup", error=str(e))
+        logger.warning("Redis pool initialization skipped or failed during startup", error=str(e))
 
     yield
 
     logger.info("Shutting down AI-Enhanced Online Judge Platform backend...")
-    await close_redis_pool()
-    await async_engine.dispose()
-    logger.info("All async connection pools closed cleanly.")
+    try:
+        await close_redis_pool()
+        await async_engine.dispose()
+        logger.info("All async connection pools closed cleanly.")
+    except Exception as e:
+        logger.warning("Resource cleanup exception during shutdown", error=str(e))
 
 
 def create_application() -> FastAPI:
