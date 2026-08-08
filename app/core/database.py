@@ -7,9 +7,16 @@ from sqlalchemy.ext.asyncio import (
 )
 from app.core.config import settings
 
+# Normalize DATABASE_URL for asyncpg driver (e.g. Neon or Heroku postgres:// URLs)
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 # Create async engine using asyncpg driver with tuned connection pool parameters
 async_engine: AsyncEngine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     pool_size=settings.DATABASE_POOL_SIZE,
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     pool_pre_ping=True,
