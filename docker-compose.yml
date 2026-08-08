@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL with pgvector extension
   postgres:
@@ -13,8 +11,15 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - judge-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # Redis for Celery Broker and Caching
+  # Redis for Celery Broker, Pub/Sub & Caching
   redis:
     image: redis:7-alpine
     container_name: online_judge_redis
@@ -22,6 +27,13 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - judge-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # MinIO for Object Storage (Local S3 equivalent)
   minio:
@@ -36,6 +48,69 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    networks:
+      - judge-net
+
+  # Node.js Compiler Engine Microservice (AlgoU-Online-Compiler-2)
+  compiler-engine:
+    build:
+      context: ./compiler-engine
+      dockerfile: Dockerfile
+    container_name: online_judge_compiler_engine
+    environment:
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    networks:
+      - judge-net
+
+  # FastAPI Backend API Server
+  api-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: online_judge_backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/online_judge_db
+      - REDIS_URL=redis://redis:6379/0
+      - COMPILER_ENGINE_URL=http://compiler-engine:8000/run
+      - ENVIRONMENT=development
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      compiler-engine:
+        condition: service_started
+    networks:
+      - judge-net
+
+  # Celery Execution Worker
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: online_judge_celery_worker
+    command: celery -A app.core.celery_app worker -Q q_compile_exec,q_ai_analysis --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/online_judge_db
+      - REDIS_URL=redis://redis:6379/0
+      - COMPILER_ENGINE_URL=http://compiler-engine:8000/run
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      compiler-engine:
+        condition: service_started
+    networks:
+      - judge-net
+
+networks:
+  judge-net:
+    driver: bridge
 
 volumes:
   postgres_data:
