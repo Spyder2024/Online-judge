@@ -1,10 +1,13 @@
 import sys
 import os
 
-# Add root directory to python module search path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add root project directory to Python module search path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
 
 from main import app
 
-# Export app for Vercel Serverless Function runtime
-__all__ = ["app"]
+# Export ASGI application instance for Vercel Serverless Functions
+handler = app
+app = app
