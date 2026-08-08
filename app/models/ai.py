@@ -37,7 +37,7 @@ class KnowledgeBaseHint(Base, TimestampMixin):
     hint_level: Mapped[int] = mapped_column(Integer, nullable=False)  # 1: Nudge, 2: Idea, 3: Pseudocode
     hint_content: Mapped[str] = mapped_column(Text, nullable=False)
     hint_embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(1536), nullable=True
+        Vector(384), nullable=True
     )
 
     # Relationship

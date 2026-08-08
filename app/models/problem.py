@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from app.models.submission import Submission
     from app.models.contest import ContestProblem
     from app.models.ai import KnowledgeBaseHint
+    from app.models.profile import BookmarkedProblem
 
 
 class ProblemDifficulty(str, enum.Enum):
@@ -70,7 +71,7 @@ class Problem(Base, TimestampMixin):
     time_limit: Mapped[float] = mapped_column(Float, nullable=False)  # in seconds
     memory_limit: Mapped[int] = mapped_column(Integer, nullable=False)  # in MB
     problem_embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(1536), nullable=True
+        Vector(384), nullable=True
     )
 
     # Relationships
@@ -88,6 +89,10 @@ class Problem(Base, TimestampMixin):
     )
     hints: Mapped[List["KnowledgeBaseHint"]] = relationship(
         "KnowledgeBaseHint", back_populates="problem", cascade="all, delete-orphan"
+    )
+    # Module 2: Bookmarks back-reference
+    bookmarks: Mapped[List["BookmarkedProblem"]] = relationship(
+        "BookmarkedProblem", back_populates="problem", cascade="all, delete-orphan"
     )
 
 

@@ -4,6 +4,7 @@ from app.models.problem import Problem, ProblemDifficulty, Tag, ProblemTag, Test
 from app.models.submission import Submission, SubmissionVerdict, LanguageEnum, AIReview
 from app.models.contest import Contest, ContestProblem, ContestLeaderboard
 from app.models.ai import KnowledgeBaseHint, AsyncTaskLog, TaskStatus
+from app.models.profile import UserProfile, BookmarkedProblem  # Module 2
 
 __all__ = [
     "Base",
@@ -25,4 +26,7 @@ __all__ = [
     "KnowledgeBaseHint",
     "AsyncTaskLog",
     "TaskStatus",
+    # Module 2
+    "UserProfile",
+    "BookmarkedProblem",
 ]

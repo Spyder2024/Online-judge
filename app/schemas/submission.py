@@ -23,7 +23,7 @@ class SubmissionBase(BaseModel):
 
 class SubmissionCreate(SubmissionBase):
     code_embedding: Optional[list[float]] = Field(
-        default=None, min_length=1536, max_length=1536, description="Optional 1536-dimensional code embedding"
+        default=None, min_length=384, max_length=384, description="Optional 384-dimensional code embedding"
     )
 
 
@@ -31,7 +31,7 @@ class SubmissionUpdate(BaseModel):
     verdict: Optional[SubmissionVerdict] = None
     execution_time: Optional[float] = Field(None, ge=0.0)
     memory_consumed: Optional[int] = Field(None, ge=0)
-    code_embedding: Optional[list[float]] = Field(None, min_length=1536, max_length=1536)
+    code_embedding: Optional[list[float]] = Field(None, min_length=384, max_length=384)
 
 
 class SubmissionResponse(SubmissionBase):

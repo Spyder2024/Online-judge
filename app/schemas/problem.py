@@ -48,7 +48,7 @@ class ProblemCreate(ProblemBase):
     tag_names: Optional[List[str]] = Field(default=None, description="List of tag names to link")
     test_cases: Optional[List[TestCaseCreate]] = Field(default=None, description="Initial test cases")
     problem_embedding: Optional[List[float]] = Field(
-        default=None, min_length=1536, max_length=1536, description="1536-dimensional vector embedding"
+        default=None, min_length=384, max_length=384, description="384-dimensional vector embedding"
     )
 
 
@@ -59,7 +59,7 @@ class ProblemUpdate(BaseModel):
     time_limit: Optional[float] = Field(None, gt=0.0)
     memory_limit: Optional[int] = Field(None, gt=0)
     tag_names: Optional[List[str]] = None
-    problem_embedding: Optional[List[float]] = Field(None, min_length=1536, max_length=1536)
+    problem_embedding: Optional[List[float]] = Field(None, min_length=384, max_length=384)
 
 
 class ProblemResponse(ProblemBase):
@@ -74,3 +74,12 @@ class ProblemResponse(ProblemBase):
 class ProblemDetailResponse(ProblemResponse):
     test_cases: List[TestCaseResponse] = []
     problem_embedding: Optional[List[float]] = None
+
+
+class PaginatedProblemResponse(BaseModel):
+    items: List[ProblemResponse]
+    total_count: int
+    page: int
+    limit: int
+    total_pages: int
+

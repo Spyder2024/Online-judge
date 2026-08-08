@@ -35,9 +35,9 @@ class Submission(Base, TimestampMixin):
     submission_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True
     )
-    user_id: Mapped[Optional[int]] = mapped_column(
+    user_id: Mapped[int] = mapped_column(
         ForeignKey("users.user_id", ondelete="CASCADE"),
-        nullable=True,
+        nullable=False,
         index=True,
     )
     problem_id: Mapped[int] = mapped_column(
@@ -58,11 +58,11 @@ class Submission(Base, TimestampMixin):
     execution_time: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)  # in ms
     memory_consumed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # in KB
     code_embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(1536), nullable=True
+        Vector(384), nullable=True
     )
 
     # Relationships
-    user: Mapped[Optional["User"]] = relationship("User", back_populates="submissions")
+    user: Mapped["User"] = relationship("User", back_populates="submissions")
     problem: Mapped["Problem"] = relationship("Problem", back_populates="submissions")
     ai_review: Mapped[Optional["AIReview"]] = relationship(
         "AIReview", back_populates="submission", uselist=False, cascade="all, delete-orphan"
