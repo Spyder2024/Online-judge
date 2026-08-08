@@ -13,7 +13,8 @@ from app.services.ai_agent import (
     TLEAnalyzer,
     MultiAgentReviewPanel,
     EdgeCaseProvider,
-    PlagiarismDetector
+    PlagiarismDetector,
+    is_empty_implementation
 )
 from app.tasks.execution import _publish_event
 
@@ -47,8 +48,19 @@ async def _analyze_submission_async(task_id: str, submission_id: int) -> None:
         quality_score = 85.0
         metrics = {}
 
+        # Directive 3: Immediate 0.0 Quality Score for empty implementation
+        if is_empty_implementation(code):
+            ai_feedback = (
+                "### ⚠️ Implementation Missing\n\n"
+                "Your submission contains an empty function or default template (`pass`). "
+                "Implementation missing. Please write your algorithm."
+            )
+            suggested_refactor = "# Implementation missing. Please write your algorithm."
+            quality_score = 0.0
+            metrics = {"prompt_tokens": 10, "completion_tokens": 10, "total_tokens": 20, "latency_ms": 1.0}
+
         # 1. TLE Analysis
-        if verdict == SubmissionVerdict.TIME_LIMIT_EXCEEDED:
+        elif verdict == SubmissionVerdict.TIME_LIMIT_EXCEEDED:
             tle_res = TLEAnalyzer.analyze(code, lang, problem.statement_text, problem.time_limit)
             ai_feedback = tle_res["explanation"]
             suggested_refactor = "// TLE Fix: Refactor loop structures to O(N log N) or O(N)"

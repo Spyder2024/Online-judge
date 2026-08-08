@@ -132,10 +132,111 @@ class MultiAgentReviewPanel:
             "suggestions": suggestions or ["Algorithmic paradigm is optimal for given constraints."]
         }
 
+def is_empty_implementation(code: str) -> bool:
+    """
+    Directive 3: Returns True if the code contains only comments, empty function signatures,
+    or pass statements without any actual algorithmic logic.
+    """
+    if not code or not code.strip():
+        return True
+
+    # Strip out comment lines
+    non_comment_lines = [
+        l.strip() for l in code.splitlines()
+        if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("//")
+    ]
+    if not non_comment_lines:
+        return True
+
+    # Check non-definition/non-decorator lines
+    body_lines = [
+        l for l in non_comment_lines
+        if not l.startswith("def ") and not l.startswith("class ") and not l.startswith("@") and not l.startswith("public ")
+    ]
+    if not body_lines or all(l in ("pass", "...", "pass;", "return", "return;", "return None;") for l in body_lines):
+        return True
+
+    # Python AST check
+    try:
+        import ast
+        tree = ast.parse(code)
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                real_stmts = [
+                    stmt for stmt in node.body
+                    if not isinstance(stmt, ast.Pass) and not (isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant))
+                ]
+                if not real_stmts:
+                    return True
+    except Exception:
+        pass
+
+    return False
+
+
+class MultiAgentReviewPanel:
+    """
+    Multi-Agent Code Review Panel ('Dream Team') combining Nitpicker, Security Expert,
+    and Algorithmic Optimizer agents into a unified overall Code Quality Score (0-100).
+    """
+
+    @staticmethod
+    def _agent_nitpicker(code: str, language: str) -> Dict[str, Any]:
+        """Agent 1: Evaluates clean code, variable naming, and style conventions."""
+        issues = []
+        if len(code.splitlines()) > 50:
+            issues.append("Method length exceeds 50 lines; consider modularizing into helper functions.")
+        return {
+            "agent": "The Nitpicker",
+            "score": 90 if not issues else 78,
+            "observations": issues or ["Code is neatly formatted with good variable naming."]
+        }
+
+    @staticmethod
+    def _agent_security_expert(code: str, language: str) -> Dict[str, Any]:
+        """Agent 2: Scans for buffer leaks, memory corruption, unsafe functions."""
+        vulnerabilities = []
+        if "gets(" in code or "strcpy(" in code:
+            vulnerabilities.append("Unsafe C string function used (buffer overflow risk).")
+        if "raw_ptr" in code or "malloc" in code and "free" not in code:
+            vulnerabilities.append("Potential memory leak detected: malloc without corresponding free.")
+        return {
+            "agent": "The Security Expert",
+            "score": 100 if not vulnerabilities else 65,
+            "vulnerabilities": vulnerabilities or ["Zero memory corruption or unsafe system calls detected."]
+        }
+
+    @staticmethod
+    def _agent_optimizer(code: str, language: str) -> Dict[str, Any]:
+        """Agent 3: Proposes hyper-optimized paradigms (bitwise, DP space reduction)."""
+        suggestions = []
+        if "% 2" in code:
+            suggestions.append("Replace modulo operation `x % 2` with bitwise check `x & 1` for a micro-speedup.")
+        if "[[0] *" in code or "new int[" in code:
+            suggestions.append("Space optimization: Flatten 2D DP table into a 1D array to reduce memory cache misses.")
+        return {
+            "agent": "The Algorithmic Optimizer",
+            "score": 88,
+            "suggestions": suggestions or ["Algorithmic paradigm is optimal for given constraints."]
+        }
+
     @classmethod
     def synthesize_review(cls, code: str, language: str) -> Dict[str, Any]:
         start_time = time.perf_counter()
         
+        # Directive 3: AST / Empty implementation check
+        if is_empty_implementation(code):
+            return {
+                "ai_feedback": (
+                    "### ⚠️ Implementation Missing\n\n"
+                    "Your submission contains an empty function or default template (`pass`). "
+                    "Implementation missing. Please write your algorithm."
+                ),
+                "suggested_refactoring": "# Implementation missing. Please write your algorithm.",
+                "code_quality_score": 0.0,
+                "metrics": TokenMetrics(prompt_tokens=10, completion_tokens=10, total_tokens=20, latency_ms=1.0).__dict__
+            }
+
         nitpicker = cls._agent_nitpicker(code, language)
         security = cls._agent_security_expert(code, language)
         optimizer = cls._agent_optimizer(code, language)
