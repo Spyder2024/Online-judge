@@ -16,7 +16,8 @@ async def submission_websocket_endpoint(websocket: WebSocket, submission_id: int
     Listens on Redis Pub/Sub channel 'submission_{submission_id}' and relays events.
     """
     await websocket.accept()
-    logger.info("WebSocket client connected", submission_id=submission_id)
+    await websocket.send_json({"event": "CONNECTED", "submission_id": submission_id})
+    logger.info("WebSocket client connected and handshake sent", submission_id=submission_id)
     
     redis_client = await get_redis()
     pubsub = redis_client.pubsub()
@@ -38,9 +39,8 @@ async def submission_websocket_endpoint(websocket: WebSocket, submission_id: int
                 
                 # Check if final event reached to close stream cleanly
                 if isinstance(payload, dict) and payload.get("event") in ("COMPLETED", "FAILED", "AI_REVIEW_COMPLETED"):
-                    if payload.get("event") == "AI_REVIEW_COMPLETED":
-                        await websocket.send_json({"event": "STREAM_FINISHED"})
-                        break
+                    await websocket.send_json({"event": "STREAM_FINISHED"})
+                    break
 
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected", submission_id=submission_id)

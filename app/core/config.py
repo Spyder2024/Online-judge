@@ -33,7 +33,19 @@ class Settings(BaseSettings):
     STORAGE_ACCESS_KEY_ID: str = "minioadmin"
     STORAGE_SECRET_ACCESS_KEY: str = "minioadmin"
     STORAGE_REGION: str = "us-east-1"
-    PRESIGNED_URL_EXPIRE_SECONDS: int = 3600
+    # Compiler Microservice Endpoint
+    COMPILER_ENGINE_URL: str = "http://compiler-engine:8000/run"
+    COMPILER_ENGINE_FALLBACK_URL: str = "http://127.0.0.1:8000/run"
+
+    # Module 3: OAuth2 Provider Credentials
+    # Set these in .env — leave blank to disable the corresponding provider.
+    OAUTH_REDIRECT_BASE_URL: str = "http://localhost:8000"   # public-facing backend URL
+
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+
+    GITHUB_CLIENT_ID: Optional[str] = None
+    GITHUB_CLIENT_SECRET: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

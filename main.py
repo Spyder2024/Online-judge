@@ -82,6 +82,43 @@ def create_application() -> FastAPI:
         """
         return {"status": "ok", "environment": settings.ENVIRONMENT, "version": "1.0.0"}
 
+    @app.post("/run", include_in_schema=False)
+    async def run_code_fallback(payload: dict):
+        """
+        Compiler Engine fallback endpoint for local development.
+        Executes code in isolated subprocess and returns stdout/stderr JSON payload.
+        """
+        import subprocess, sys, tempfile, os
+        lang = payload.get("language", "py")
+        code = payload.get("code", "")
+        input_data = payload.get("input", "")
+
+        if lang in ["py", "python3"]:
+            with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False, encoding="utf-8") as f:
+                f.write(code)
+                f_path = f.name
+            try:
+                proc = subprocess.run(
+                    [sys.executable, f_path],
+                    input=input_data,
+                    text=True,
+                    capture_output=True,
+                    timeout=5
+                )
+                return {"output": proc.stdout, "error": proc.stderr}
+            except subprocess.TimeoutExpired:
+                return {"output": "", "error": "Time Limit Exceeded"}
+            except Exception as e:
+                return {"output": "", "error": str(e)}
+            finally:
+                if os.path.exists(f_path):
+                    try:
+                        os.remove(f_path)
+                    except Exception:
+                        pass
+
+        return {"output": "", "error": "Unsupported language fallback"}
+
     # Mount static frontend application UI
     from pathlib import Path
     from fastapi.staticfiles import StaticFiles
@@ -93,7 +130,10 @@ def create_application() -> FastAPI:
         
         @app.get("/", include_in_schema=False)
         async def serve_index():
-            return FileResponse(frontend_path / "index.html")
+            return FileResponse(
+                frontend_path / "index.html",
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+            )
 
     return app
 

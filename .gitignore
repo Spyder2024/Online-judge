@@ -29,3 +29,10 @@ build/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Scratch and temporary test scripts
+scratch/
+scratch_audit.py
+node_modules/
+compiler-engine/node_modules/
+compiler-engine/temp/

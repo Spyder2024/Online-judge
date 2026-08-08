@@ -9,7 +9,7 @@ from app.core.database import get_db
 from app.api.deps import get_current_user, get_current_admin_user
 from app.models.user import User
 from app.models.problem import Problem, ProblemTag, Tag, TestCase
-from app.schemas.problem import ProblemCreate, ProblemResponse, ProblemDetailResponse
+from app.schemas.problem import ProblemCreate, ProblemResponse, ProblemDetailResponse, PaginatedProblemResponse
 
 router = APIRouter()
 
@@ -19,17 +19,37 @@ class SemanticSearchRequest(BaseModel):
     limit: Optional[int] = 10
 
 
-@router.get("", response_model=List[ProblemResponse])
+import math
+from sqlalchemy import func
+
+@router.get("", response_model=PaginatedProblemResponse)
 async def list_problems(
-    skip: int = 0,
-    limit: int = 20,
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
 ):
-    """List practice problems with pagination."""
-    stmt = select(Problem).options(selectinload(Problem.tags)).offset(skip).limit(limit)
+    """List practice problems with page-based pagination (page=1, limit=50)."""
+    offset = (page - 1) * limit
+    
+    # Total count query
+    count_stmt = select(func.count(Problem.problem_id))
+    count_res = await db.execute(count_stmt)
+    total_count = count_res.scalar() or 0
+
+    # Paginated items query
+    stmt = select(Problem).options(selectinload(Problem.tags)).offset(offset).limit(limit)
     result = await db.execute(stmt)
     problems = result.scalars().all()
-    return problems
+    
+    total_pages = math.ceil(total_count / limit) if total_count > 0 else 1
+    
+    return {
+        "items": problems,
+        "total_count": total_count,
+        "page": page,
+        "limit": limit,
+        "total_pages": total_pages
+    }
 
 
 @router.get("/{problem_id}", response_model=ProblemDetailResponse)
@@ -79,9 +99,9 @@ async def search_problems_semantic(
     Natural language vector semantic search using pgvector cosine distance on Problem.problem_embedding.
     If embeddings are not generated yet, falls back to text ILIKE matching.
     """
-    query_text = search_req.query.strip()
     if not query_text:
-        return await list_problems(0, search_req.limit or 10, db)
+        res = await list_problems(1, search_req.limit or 10, db)
+        return res["items"]
         
     # Standard text matching fallback / pgvector similarity
     stmt = (

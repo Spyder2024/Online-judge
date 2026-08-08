@@ -21,22 +21,14 @@ security_bearer = HTTPBearer(auto_error=False)
 async def submit_code(
     sub_in: SubmissionCreate,
     db: AsyncSession = Depends(get_db),
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Submit code for asynchronous evaluation.
-    Creates DB submission & AsyncTaskLog records and dispatches Celery execution task to `q_compile_exec`.
+    Requires valid JWT Bearer token authentication.
     """
-    user_id = 1
-    if credentials and credentials.credentials:
-        try:
-            user = await get_current_user(token=credentials.credentials, db=db)
-            user_id = user.user_id
-        except Exception:
-            user_id = 1
-
     submission = Submission(
-        user_id=user_id,
+        user_id=current_user.user_id,
         problem_id=sub_in.problem_id,
         code=sub_in.code,
         language_enum=sub_in.language_enum,
@@ -54,7 +46,7 @@ async def submit_code(
         task_id=task_id,
         task_name="app.tasks.execution.evaluate_submission_task",
         status=TaskStatus.PENDING,
-        payload={"submission_id": submission.submission_id, "user_id": user_id}
+        payload={"submission_id": submission.submission_id, "user_id": current_user.user_id}
     )
     db.add(task_log)
     await db.commit()
