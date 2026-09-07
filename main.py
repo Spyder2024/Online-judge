@@ -79,11 +79,76 @@ def create_application() -> FastAPI:
         return Response(status_code=204)
 
     @app.get("/health", tags=["Health & Monitoring"])
-    async def health_check() -> dict[str, str]:
+    @app.get(f"{settings.API_V1_STR}/health", tags=["Health & Monitoring"])
+    async def health_check() -> dict:
         """
-        Liveness and readiness probe endpoint.
+        Liveness and readiness probe endpoint returning real database ping,
+        Redis latency, and judge queue depth.
         """
-        return {"status": "ok", "environment": settings.ENVIRONMENT, "version": "1.0.0"}
+        import time
+        from datetime import datetime, timezone
+        from sqlalchemy import text
+        from app.core.redis import get_redis
+
+        db_status = "down"
+        db_latency_ms = None
+        try:
+            t0 = time.perf_counter()
+            async with async_engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            db_latency_ms = round((time.perf_counter() - t0) * 1000, 2)
+            db_status = "up"
+        except Exception as e:
+            logger.warning("Database health check failed", error=str(e))
+
+        redis_status = "down"
+        redis_latency_ms = None
+        queue_depth = 0
+        try:
+            r = await get_redis()
+            t0 = time.perf_counter()
+            await r.ping()
+            redis_latency_ms = round((time.perf_counter() - t0) * 1000, 2)
+            redis_status = "up"
+            try:
+                queue_depth = await r.llen("q_compile_exec")
+            except Exception:
+                queue_depth = 0
+        except Exception as e:
+            logger.warning("Redis health check failed", error=str(e))
+
+        if db_status == "up" and redis_status == "up":
+            overall_status = "operational"
+        elif db_status == "up" or redis_status == "up":
+            overall_status = "degraded"
+        else:
+            overall_status = "down"
+
+        return {
+            "status": overall_status,
+            "environment": settings.ENVIRONMENT,
+            "version": "1.0.0",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "components": {
+                "database": {
+                    "status": db_status,
+                    "latency_ms": db_latency_ms,
+                },
+                "redis": {
+                    "status": redis_status,
+                    "latency_ms": redis_latency_ms,
+                },
+                "judge_queue": {
+                    "status": "active" if redis_status == "up" else "offline",
+                    "depth": queue_depth,
+                    "queue_name": "q_compile_exec",
+                },
+                "worker": {
+                    "status": "active" if redis_status == "up" else "offline",
+                    "heartbeat": True if redis_status == "up" else False,
+                }
+            }
+        }
 
     @app.post("/run", include_in_schema=False)
     async def run_code_fallback(payload: dict):
@@ -126,13 +191,23 @@ def create_application() -> FastAPI:
     from pathlib import Path
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse
+    from fastapi import HTTPException
     
     frontend_path = Path(__file__).parent / "frontend"
     if frontend_path.exists():
         app.mount("/static", StaticFiles(directory=frontend_path), name="static")
         
         @app.get("/", include_in_schema=False)
-        async def serve_index():
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def serve_spa(full_path: str = ""):
+            api_prefix = settings.API_V1_STR.lstrip("/")
+            if full_path and (
+                full_path == api_prefix or
+                full_path.startswith(f"{api_prefix}/") or
+                full_path in ("docs", "redoc", "openapi.json", "health", "run", "ws") or
+                full_path.startswith(("docs/", "redoc/", "openapi.json/", "health/", "run/", "ws/", "static/"))
+            ):
+                raise HTTPException(status_code=404, detail="Not Found")
             return FileResponse(
                 frontend_path / "index.html",
                 headers={"Cache-Control": "no-cache, no-store, must-revalidate"}

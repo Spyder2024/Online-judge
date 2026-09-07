@@ -65,6 +65,8 @@ class ProblemUpdate(BaseModel):
 class ProblemResponse(ProblemBase):
     problem_id: int
     tags: List[TagResponse] = []
+    status: Optional[str] = None
+    acceptance_rate: Optional[float] = None
     created_at: datetime
     updated_at: datetime
 

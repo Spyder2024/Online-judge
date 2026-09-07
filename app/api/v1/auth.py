@@ -41,14 +41,22 @@ async def signup(
     new_user = User(
         username=user_in.username,
         password_hash=hashed_pw,
-        role=user_in.role or "Contestant",
+        role=user_in.role or UserRole.CONTESTANT,
         rating=1200,
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
     logger.info("User registered successfully", user_id=new_user.user_id)
-    return UserResponse.model_validate(new_user)
+
+    access_token = create_access_token(
+        subject=new_user.user_id,
+        role=new_user.role.value if hasattr(new_user.role, 'value') else str(new_user.role),
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    resp = UserResponse.model_validate(new_user)
+    resp.access_token = access_token
+    return resp
 
 
 @router.post(
