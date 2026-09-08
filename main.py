@@ -79,6 +79,7 @@ def create_application() -> FastAPI:
         return Response(status_code=204)
 
     @app.get("/health", tags=["Health & Monitoring"])
+    @app.get(f"{settings.API_V1_STR}/health", tags=["Health & Monitoring"])
     async def health_check() -> dict[str, str]:
         """
         Liveness and readiness probe endpoint.

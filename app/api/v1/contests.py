@@ -50,5 +50,8 @@ async def get_contest_leaderboard(
     """
     Fetch high-concurrency contest rankings instantly from Redis ZSET without DB table joins.
     """
-    leaderboard = await RedisLeaderboardService.get_leaderboard(contest_id=contest_id, limit=limit)
+    try:
+        leaderboard = await RedisLeaderboardService.get_leaderboard(contest_id=contest_id, limit=limit)
+    except Exception:
+        leaderboard = []
     return {"contest_id": contest_id, "rankings": leaderboard}
