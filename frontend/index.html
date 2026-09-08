@@ -124,49 +124,69 @@
 
         /* ── Design Tokens & Light/Dark Theme Modes ───────────────── */
         :root, body.dark-theme {
-            --void:         #000000;
-            --surface:      #0d0d0d;
-            --elevated:     #141414;
-            --border:       #222222;
-            --border-sub:   #1a1a1a;
-            --parchment:    #d9d2c4;
-            --amber:        #f7e1c0;
-            --amber-dim:    #c4a882;
-            --rose:         #ffebeb;
-            --rose-dim:     #e8c4c4;
-            --muted:        #6b6560;
-            --white:        #ffffff;
+            /* Exact Dark Theme Tokens */
+            --bg-primary:       #0B0F14;
+            --bg-secondary:     #111827;
+            --card-surface:     #1A2233;
+            --border:           #2A3441;
+            --border-sub:       rgba(42, 52, 65, 0.6);
+            --primary-accent:   #E6C38A;
+            --success:          #22C55E;
+            --warning:          #F59E0B;
+            --error:            #EF4444;
+            --text-primary:     #F8FAFC;
+            --text-secondary:   #94A3B8;
 
-            --bg-main:      #000000;
-            --bg-surface:   #0d0d0d;
-            --bg-elevated:  #141414;
-            --border-main:  #1a1a1a;
-            --border-card:  #222222;
-            --text-main:    #ffffff;
-            --text-muted:   #6b6560;
+            /* Compatibility Aliases */
+            --bg-main:          var(--bg-primary);
+            --bg-surface:       var(--bg-secondary);
+            --bg-elevated:      var(--card-surface);
+            --border-main:      var(--border);
+            --border-card:      var(--border);
+            --text-main:        var(--text-primary);
+            --text-muted:       var(--text-secondary);
+            --amber:            var(--primary-accent);
+            --amber-dim:        #c4a882;
+            --rose:             var(--error);
+            --rose-dim:         #e8c4c4;
+            --surface:          var(--bg-secondary);
+            --elevated:         var(--card-surface);
+            --void:             var(--bg-primary);
+            --parchment:        var(--text-primary);
+            --white:            #ffffff;
         }
 
         body.light-theme {
-            --void:         #ffffff;
-            --surface:      #fcfbf9;
-            --elevated:     #f4f1ea;
-            --border:       #d9d2c4;
-            --border-sub:   #e5e0d8;
-            --parchment:    #1a1a1a;
-            --amber:        #f7e1c0;
-            --amber-dim:    #c4a882;
-            --rose:         #ffebeb;
-            --rose-dim:     #e8c4c4;
-            --muted:        #6b6560;
-            --white:        #000000;
+            /* Exact Light Theme Tokens */
+            --bg-primary:       #F8FAFC;
+            --bg-secondary:     #FFFFFF;
+            --card-surface:     #FFFFFF;
+            --border:           #E2E8F0;
+            --border-sub:       #E2E8F0;
+            --primary-accent:   #B8860B;
+            --success:          #16A34A;
+            --warning:          #D97706;
+            --error:            #DC2626;
+            --text-primary:     #0F172A;
+            --text-secondary:   #64748B;
 
-            --bg-main:      #ffffff;
-            --bg-surface:   #fcfbf9;
-            --bg-elevated:  #f4f1ea;
-            --border-main:  #d9d2c4;
-            --border-card:  #e5e0d8;
-            --text-main:    #000000;
-            --text-muted:   #6b6560;
+            /* Compatibility Aliases */
+            --bg-main:          var(--bg-primary);
+            --bg-surface:       var(--bg-secondary);
+            --bg-elevated:      var(--card-surface);
+            --border-main:      var(--border);
+            --border-card:      var(--border);
+            --text-main:        var(--text-primary);
+            --text-muted:       var(--text-secondary);
+            --amber:            var(--primary-accent);
+            --amber-dim:        #996f09;
+            --rose:             var(--error);
+            --rose-dim:         #b91c1c;
+            --surface:          var(--bg-secondary);
+            --elevated:         #F1F5F9;
+            --void:             var(--bg-primary);
+            --parchment:        var(--text-primary);
+            --white:            #000000;
         }
 
         body {
