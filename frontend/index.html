@@ -1181,7 +1181,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                             difficulty: p.difficulty,
                             statement: p.statement_text,
                             tags: p.tags ? p.tags.map(t => t.tag_name) : ["Algorithm"],
-                            acc: "62.4%"
+                            acc: p.acceptance_rate !== undefined && p.acceptance_rate !== null ? `${parseFloat(p.acceptance_rate).toFixed(1)}%` : "62.4%"
                         }));
 
                         renderProblemList(cachedProblems);
@@ -1230,13 +1230,13 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 ).join('');
                 return `
                 <div onclick="selectProblem(${p.id})" class="problem-row" style="display:grid;grid-template-columns:50px 1fr 160px 100px;padding:12px 16px;align-items:center;background:var(--bg-surface);border-bottom:1px solid var(--border-main);">
-                    <div style="color:var(--text-muted);">#${p.id}</div>
+                    <div style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.id}</div>
                     <div style="font-weight:600;color:var(--text-main);transition:color 0.15s;">${p.title}</div>
                     <div style="display:flex;align-items:center;gap:6px;">
                         <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;">${p.difficulty}</span>
                         ${tags}
                     </div>
-                    <div style="text-align:right;color:var(--text-muted);">${p.acc}</div>
+                    <div style="text-align:right;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.acc}</div>
                 </div>`;
             }).join('');
         }
@@ -1260,7 +1260,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
         function selectProblem(id) {
             const problem = cachedProblems.find(p => p.id === id);
             if (problem) {
-                document.getElementById('arena-problem-title').innerText = `#${problem.id}. ${problem.title}`;
+                document.getElementById('arena-problem-title').innerText = `${problem.id}. ${problem.title}`;
                 document.getElementById('arena-text').innerText = problem.statement;
 
                 const funcName  = problem.title.replace(/[^a-zA-Z0-9]/g, '');
