@@ -409,6 +409,16 @@
             box-shadow: 0 8px 24px var(--shadow-sm);
         }
 
+        /* ── Fullscreen Editor Mode (ARENA-LAYOUT) ───────────────── */
+        .editor-fullscreen {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            background: var(--card-surface) !important;
+        }
+
         /* ── AI Mentor Drawer ────────────────────────────────────── */
         #ai-mentor-drawer {
             background: var(--surface);
@@ -777,61 +787,93 @@
             </div>
         </div>
 
-        <!-- ── SCREEN 2: CODING ARENA ─────────────────────────────── -->
+        <!-- ── SCREEN 2: CODING ARENA (ARENA-LAYOUT) ──────────────── -->
         <div id="screen-arena" class="h-full hidden" style="display:none;">
-            <div style="display:flex;height:100%;">
+            <div id="arena-split-container" style="display:flex;height:100%;position:relative;overflow:hidden;">
 
-                <!-- Left Pane: Problem Description -->
-                <div style="width:50%;height:100%;display:flex;flex-direction:column;background:#000;border-right:1px solid #1a1a1a;">
+                <!-- Left Pane: Problem Description (40% default) -->
+                <div id="arena-left-pane" style="width:40%;min-width:280px;height:100%;display:flex;flex-direction:column;background:var(--card-surface);border-right:1px solid var(--border);position:relative;">
                     <!-- Toolbar -->
-                    <div style="height:44px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;background:#0d0d0d;border-bottom:1px solid #1a1a1a;flex-shrink:0;">
-                        <span id="arena-problem-title" style="font-size:12px;font-weight:600;color:#fff;font-family:'Inter',sans-serif;">#1. Two Sum</span>
-                        <button onclick="downloadS3Pdf()" class="btn-ghost" style="display:flex;align-items:center;gap:5px;">
-                            <i data-lucide="file-text" style="width:11px;height:11px;"></i>
-                            PDF
-                        </button>
+                    <div style="height:44px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;background:var(--bg-elevated);border-bottom:1px solid var(--border);flex-shrink:0;">
+                        <div style="display:flex;align-items:center;gap:8px;overflow:hidden;">
+                            <span id="arena-problem-title" style="font-size:13px;font-weight:600;color:var(--text-primary);font-family:'Inter',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">1. Two Sum</span>
+                            <span id="arena-problem-difficulty" class="badge-easy" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;"><span aria-hidden="true">●</span> Easy</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <button onclick="copyShareProblemUrl()" class="btn-ghost" style="padding:4px 8px;font-size:11px;display:flex;align-items:center;gap:4px;" title="Copy shareable link">
+                                <i data-lucide="share-2" style="width:12px;height:12px;"></i>
+                            </button>
+                            <button onclick="downloadS3Pdf()" class="btn-ghost" style="display:flex;align-items:center;gap:5px;padding:4px 8px;font-size:11px;">
+                                <i data-lucide="file-text" style="width:11px;height:11px;"></i>
+                                PDF
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Problem Content -->
                     <div id="arena-statement-body" style="flex:1;padding:24px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;">
-                        <div>
-                            <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:#fff;margin:0 0 10px 0;">Statement</h3>
-                            <p id="arena-text" style="font-size:12px;color:#d9d2c4;line-height:1.7;margin:0;">Given an array of integers <code style="background:#141414;padding:1px 5px;border-radius:4px;color:#f7e1c0;font-family:'JetBrains Mono',monospace;font-size:11px;">nums</code> and an integer <code style="background:#141414;padding:1px 5px;border-radius:4px;color:#f7e1c0;font-family:'JetBrains Mono',monospace;font-size:11px;">target</code>, return indices of the two numbers such that they add up to target.</p>
+                        <!-- Metadata Badges -->
+                        <div id="arena-meta-tags" style="display:flex;flex-wrap:wrap;gap:6px;">
+                            <span style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:2px 8px;border-radius:6px;font-size:10px;font-family:'JetBrains Mono',monospace;">⏱ 1.0s</span>
+                            <span style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:2px 8px;border-radius:6px;font-size:10px;font-family:'JetBrains Mono',monospace;">💾 256 MB</span>
+                            <span id="arena-tag-pills" style="display:inline-flex;gap:6px;"></span>
                         </div>
 
                         <div>
-                            <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:#fff;margin:0 0 10px 0;">Sample Test Case</h3>
-                            <div style="padding:14px;border-radius:10px;background:#0d0d0d;border:1px solid #1a1a1a;font-family:'JetBrains Mono',monospace;font-size:11px;color:#d9d2c4;line-height:1.8;">
-                                <div><span style="color:#6b6560;">Input:</span>  nums = [2,7,11,15], target = 9</div>
-                                <div><span style="color:#6b6560;">Output:</span> [0,1]</div>
+                            <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text-primary);margin:0 0 10px 0;">Statement</h3>
+                            <p id="arena-text" style="font-size:13px;color:var(--text-primary);line-height:1.7;margin:0;">Given an array of integers <code style="background:var(--bg-elevated);padding:2px 6px;border-radius:4px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;font-size:11px;">nums</code> and an integer <code style="background:var(--bg-elevated);padding:2px 6px;border-radius:4px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;font-size:11px;">target</code>, return indices of the two numbers such that they add up to target.</p>
+                        </div>
+
+                        <div>
+                            <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text-primary);margin:0 0 10px 0;">Sample Test Case</h3>
+                            <div style="padding:14px;border-radius:10px;background:var(--bg-elevated);border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-primary);line-height:1.8;">
+                                <div><span style="color:var(--text-secondary);">Input:</span>  nums = [2,7,11,15], target = 9</div>
+                                <div><span style="color:var(--text-secondary);">Output:</span> [0,1]</div>
                             </div>
                         </div>
 
                         <div>
-                            <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:#fff;margin:0 0 10px 0;">Constraints</h3>
-                            <ul style="margin:0;padding-left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6b6560;line-height:2;">
+                            <h3 style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--text-primary);margin:0 0 10px 0;">Constraints</h3>
+                            <ul style="margin:0;padding-left:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary);line-height:2;">
                                 <li>2 &lt;= nums.length &lt;= 10⁴</li>
                                 <li>-10⁹ &lt;= nums[i] &lt;= 10⁹</li>
-                                <li style="color:#f7e1c0;">Time Limit: 1.0s &nbsp;|&nbsp; Memory Limit: 256MB</li>
+                                <li style="color:var(--primary-accent);">Time Limit: 1.0s &nbsp;|&nbsp; Memory Limit: 256MB</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Pane: Editor & Console -->
-                <div style="width:50%;height:100%;display:flex;flex-direction:column;background:#000;position:relative;">
+                <!-- Draggable Divider Resizer -->
+                <div id="arena-resizer" style="width:6px;cursor:col-resize;background:var(--border);transition:background 0.2s;flex-shrink:0;z-index:20;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--primary-accent)'" onmouseout="this.style.background='var(--border)'">
+                    <div style="width:2px;height:24px;border-radius:1px;background:rgba(255,255,255,0.2);"></div>
+                </div>
+
+                <!-- Right Pane: Editor & Console (60% default) -->
+                <div id="arena-right-pane" style="width:60%;min-width:320px;height:100%;display:flex;flex-direction:column;background:var(--card-surface);position:relative;flex:1;">
                     <!-- Editor Toolbar -->
-                    <div style="height:44px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;background:#0d0d0d;border-bottom:1px solid #1a1a1a;flex-shrink:0;">
+                    <div style="height:44px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;background:var(--bg-elevated);border-bottom:1px solid var(--border);flex-shrink:0;">
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <label style="font-size:10px;color:#6b6560;font-family:'Inter',sans-serif;">Language</label>
-                            <select id="language-select" style="background:#141414;border:1px solid #222;color:#d9d2c4;font-size:11px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:7px;outline:none;cursor:pointer;">
+                            <label style="font-size:11px;color:var(--text-secondary);font-family:'Inter',sans-serif;">Language</label>
+                            <select id="language-select" style="background:var(--card-surface);border:1px solid var(--border);color:var(--text-primary);font-size:11px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:7px;outline:none;cursor:pointer;">
                                 <option value="PYTHON3">Python 3.12</option>
                                 <option value="CPP">C++20 (GCC)</option>
                                 <option value="JAVA">Java 17 (OpenJDK)</option>
                             </select>
+
+                            <!-- Font Size Controls -->
+                            <div style="display:flex;align-items:center;gap:2px;background:var(--card-surface);border:1px solid var(--border);border-radius:6px;padding:2px 4px;">
+                                <button onclick="adjustFontSize(-1)" class="btn-ghost" style="padding:2px 6px;font-size:10px;font-weight:700;line-height:1;" title="Decrease font size">A-</button>
+                                <span id="font-size-indicator" style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);padding:0 4px;">13px</span>
+                                <button onclick="adjustFontSize(1)" class="btn-ghost" style="padding:2px 6px;font-size:10px;font-weight:700;line-height:1;" title="Increase font size">A+</button>
+                            </div>
+
+                            <!-- Fullscreen Toggle -->
+                            <button onclick="toggleEditorFullscreen()" class="btn-ghost" style="padding:4px 8px;font-size:12px;display:flex;align-items:center;gap:4px;" title="Toggle Fullscreen Editor">
+                                <span id="fullscreen-icon">⛶</span>
+                            </button>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;">
-                            <button onclick="toggleAiDrawer()" style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:rgba(217,210,196,0.06);border:1px solid rgba(217,210,196,0.15);color:#d9d2c4;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;">
+                            <button onclick="toggleAiDrawer()" style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:rgba(230,195,138,0.08);border:1px solid rgba(230,195,138,0.2);color:var(--primary-accent);font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;">
                                 <i data-lucide="sparkles" style="width:12px;height:12px;"></i>
                                 AI Mentor
                             </button>
@@ -843,9 +885,9 @@
                     </div>
 
                     <!-- Code Editor (Monaco Editor Container + Interactive Textarea) -->
-                    <div style="flex:1;position:relative;background:#0d0d0d;border-bottom:1px solid #1a1a1a;overflow:hidden;display:flex;flex-direction:column;">
+                    <div style="flex:1;position:relative;background:var(--card-surface);border-bottom:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;">
                         <div id="monaco-editor-container" style="width:100%;height:100%;position:absolute;inset:0;z-index:2;display:none;"></div>
-                        <textarea id="code-editor" spellcheck="false" style="width:100%;height:100%;background:#0d0d0d;color:#f7e1c0;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;line-height:1.7;padding:16px;outline:none;resize:none;border:none;z-index:1;position:relative;"># Solution template
+                        <textarea id="code-editor" spellcheck="false" style="width:100%;height:100%;background:var(--card-surface);color:var(--text-primary);font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;line-height:1.7;padding:16px;outline:none;resize:none;border:none;z-index:1;position:relative;"># Solution template
 def twoSum(nums: list[int], target: int) -> list[int]:
     # Write your solution algorithm here
     pass
@@ -853,19 +895,17 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                     </div>
 
                     <!-- WebSocket Console -->
-                    <div style="height:160px;background:#000;padding:12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+                    <div style="height:160px;background:var(--card-surface);padding:12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
                         <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#6b6560;display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);display:flex;align-items:center;gap:6px;">
                                 <i data-lucide="activity" style="width:11px;height:11px;"></i>
                                 WebSocket Stream · /ws/submissions/{id}
                             </span>
                             <span id="ws-status-badge" style="padding:2px 10px;border-radius:99px;font-size:10px;font-family:'JetBrains Mono',monospace;" class="ws-badge-idle">Idle</span>
                         </div>
                         <div id="ws-console-log" style="flex:1;">
-                            <p style="color:#6b6560;">&gt; Ready for submission. Click "Submit" to execute.</p>
+                            <p style="color:var(--text-muted);">&gt; Ready for submission. Click "Submit" to execute.</p>
                         </div>
-                    </div>
-
                     </div>
                 </div>
             </div>
@@ -1495,12 +1535,30 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             }
         });
 
-        // Select Problem & Reset Editor with Blank Template
+        // Select Problem & Reset Editor with Blank Template (ARENA-LAYOUT)
         function selectProblem(id) {
             const problem = cachedProblems.find(p => p.id === id);
             if (problem) {
-                document.getElementById('arena-problem-title').innerText = `${problem.id}. ${problem.title}`;
-                document.getElementById('arena-text').innerText = problem.statement;
+                const titleEl = document.getElementById('arena-problem-title');
+                if (titleEl) titleEl.innerText = `${problem.id}. ${problem.title}`;
+                
+                const diffEl = document.getElementById('arena-problem-difficulty');
+                if (diffEl) {
+                    const diffClass = problem.difficulty === 'Easy' ? 'badge-easy' : problem.difficulty === 'Medium' ? 'badge-medium' : 'badge-hard';
+                    const diffShape = problem.difficulty === 'Easy' ? '●' : problem.difficulty === 'Medium' ? '▲' : '◆';
+                    diffEl.className = diffClass;
+                    diffEl.innerHTML = `<span aria-hidden="true">${diffShape}</span> ${problem.difficulty}`;
+                }
+
+                const tagContainer = document.getElementById('arena-tag-pills');
+                if (tagContainer && problem.tags) {
+                    tagContainer.innerHTML = problem.tags.map(t =>
+                        `<span style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:2px 8px;border-radius:6px;font-size:10px;font-family:'JetBrains Mono',monospace;">${t}</span>`
+                    ).join('');
+                }
+
+                const textEl = document.getElementById('arena-text');
+                if (textEl) textEl.innerText = problem.statement;
 
                 const funcName  = problem.title.replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFunc = funcName.charAt(0).toLowerCase() + funcName.slice(1);
@@ -1508,6 +1566,119 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 setCodeValue(template);
             }
             switchTab('arena');
+            if (window.cmEditorInstance) {
+                setTimeout(() => window.cmEditorInstance.refresh(), 50);
+            }
+        }
+
+        // ── Coding Arena 40/60 Split & Resizer (ARENA-LAYOUT) ─────────
+        (function initArenaResizer() {
+            window.addEventListener('DOMContentLoaded', () => {
+                const resizer = document.getElementById('arena-resizer');
+                const leftPane = document.getElementById('arena-left-pane');
+                const rightPane = document.getElementById('arena-right-pane');
+                const arenaContainer = document.getElementById('arena-split-container');
+                if (!resizer || !leftPane || !rightPane || !arenaContainer) return;
+
+                let isDragging = false;
+
+                function onDown(e) {
+                    isDragging = true;
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                }
+
+                function onMove(e) {
+                    if (!isDragging) return;
+                    const containerRect = arenaContainer.getBoundingClientRect();
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    if (!clientX) return;
+                    const offset = clientX - containerRect.left;
+                    const totalWidth = containerRect.width;
+                    const minWidth = 260;
+                    const maxWidth = totalWidth - 280;
+                    if (offset < minWidth || offset > maxWidth) return;
+
+                    const leftPercent = (offset / totalWidth) * 100;
+                    leftPane.style.width = `${leftPercent}%`;
+                    rightPane.style.width = `${100 - leftPercent}%`;
+
+                    if (window.cmEditorInstance) {
+                        window.cmEditorInstance.refresh();
+                    }
+                }
+
+                function onUp() {
+                    if (isDragging) {
+                        isDragging = false;
+                        document.body.style.cursor = '';
+                        document.body.style.userSelect = '';
+                        if (window.cmEditorInstance) {
+                            window.cmEditorInstance.refresh();
+                        }
+                    }
+                }
+
+                resizer.addEventListener('mousedown', onDown);
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+
+                resizer.addEventListener('touchstart', onDown);
+                window.addEventListener('touchmove', onMove);
+                window.addEventListener('touchend', onUp);
+            });
+        })();
+
+        // Font Size Controls & Persistence (ARENA-LAYOUT)
+        let currentEditorFontSize = parseInt(localStorage.getItem('editor_font_size') || '13', 10);
+
+        function applyEditorFontSize(size) {
+            currentEditorFontSize = Math.max(10, Math.min(22, size));
+            localStorage.setItem('editor_font_size', currentEditorFontSize);
+            const indicator = document.getElementById('font-size-indicator');
+            if (indicator) indicator.innerText = `${currentEditorFontSize}px`;
+
+            const cmElement = document.querySelector('.CodeMirror');
+            if (cmElement) {
+                cmElement.style.fontSize = `${currentEditorFontSize}px`;
+                if (window.cmEditorInstance) window.cmEditorInstance.refresh();
+            }
+            const textarea = document.getElementById('code-editor');
+            if (textarea) {
+                textarea.style.fontSize = `${currentEditorFontSize}px`;
+            }
+        }
+
+        function adjustFontSize(delta) {
+            applyEditorFontSize(currentEditorFontSize + delta);
+        }
+
+        // Fullscreen Toggle (ARENA-LAYOUT)
+        function toggleEditorFullscreen() {
+            const rightPane = document.getElementById('arena-right-pane');
+            const icon = document.getElementById('fullscreen-icon');
+            if (!rightPane) return;
+            const isFull = rightPane.classList.toggle('editor-fullscreen');
+            if (isFull) {
+                if (icon) icon.innerText = '✕';
+            } else {
+                if (icon) icon.innerText = '⛶';
+            }
+            if (window.cmEditorInstance) {
+                setTimeout(() => window.cmEditorInstance.refresh(), 100);
+            }
+        }
+
+        function copyShareProblemUrl() {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert("Problem link copied to clipboard!");
+                }).catch(() => {
+                    alert("Link: " + window.location.href);
+                });
+            } else {
+                alert("Link: " + window.location.href);
+            }
         }
 
         // Tab Switching & Auth Guard (Directive 1 & 3)
