@@ -730,7 +730,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 <div class="animate-fade-in" style="display:flex;justify-content:space-between;align-items:flex-end;">
                     <div>
                         <h1 style="font-family:'Outfit',sans-serif;font-size:26px;font-weight:700;color:#fff;letter-spacing:-0.5px;margin:0 0 4px 0;">Live Leaderboard</h1>
-                        <p style="font-size:11px;color:#6b6560;font-family:'JetBrains Mono',monospace;margin:0;">Powered by Redis ZSET &nbsp;·&nbsp; Global User Rankings</p>
+                        <p style="font-size:11px;color:#6b6560;font-family:'JetBrains Mono',monospace;margin:0;">Global User Rankings</p>
                     </div>
                     <button onclick="fetchRedisLeaderboard()" class="btn-ghost" style="display:flex;align-items:center;gap:6px;">
                         <i data-lucide="refresh-cw" style="width:11px;height:11px;"></i>
@@ -748,7 +748,6 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                                 <th style="padding:12px 16px;text-align:left;font-size:10px;color:#6b6560;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">User</th>
                                 <th style="padding:12px 16px;text-align:left;font-size:10px;color:#6b6560;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Score</th>
                                 <th style="padding:12px 16px;text-align:left;font-size:10px;color:#6b6560;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Penalty</th>
-                                <th style="padding:12px 16px;text-align:left;font-size:10px;color:#6b6560;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">ZSET Score</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboard-table-body" style="background:#000;">
@@ -1696,13 +1695,12 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 { rank: 5, user: "Devin Zhao",     score: 200, penalty: "00:18:22", zset: 199998898 },
             ];
 
-            const renderRow = (rank, user, score, penalty, zset) => `
+            const renderRow = (rank, user, score, penalty) => `
                 <tr class="leaderboard-row">
                     <td style="padding:14px 16px;font-weight:700;color:${rank === 1 ? '#f7e1c0' : '#6b6560'};">${rank === 1 ? '🥇' : '#' + rank}</td>
                     <td style="padding:14px 16px;color:#fff;font-weight:600;font-family:'Inter',sans-serif;">${user}</td>
                     <td style="padding:14px 16px;color:#6ecf8e;font-weight:700;">${score} pts</td>
                     <td style="padding:14px 16px;color:#6b6560;">${penalty}</td>
-                    <td style="padding:14px 16px;color:#6b6560;font-family:'JetBrains Mono',monospace;">${zset}</td>
                 </tr>`;
 
             try {
