@@ -265,33 +265,40 @@
         /* ── Nav Tab Active State ────────────────────────────────── */
         .nav-tab {
             position: relative;
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
-            color: var(--muted);
-            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid transparent;
             font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            outline: none;
         }
         .nav-tab:hover {
-            color: var(--parchment);
-            background: rgba(255,255,255,0.04);
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        body.light-theme .nav-tab:hover {
+            background: rgba(0, 0, 0, 0.05);
         }
         .nav-tab.active {
-            color: var(--amber);
-            background: rgba(247, 225, 192, 0.08);
-            border-color: rgba(247, 225, 192, 0.15);
+            color: var(--primary-accent);
+            background: rgba(230, 195, 138, 0.08);
+            border-color: rgba(230, 195, 138, 0.2);
+            font-weight: 600;
         }
         .nav-tab.active::after {
             content: '';
             position: absolute;
-            bottom: -1px; left: 50%;
+            bottom: -2px; left: 50%;
             transform: translateX(-50%);
-            width: 30px; height: 2px;
-            background: var(--amber);
-            border-radius: 2px;
-            opacity: 0.7;
+            width: 24px; height: 2px;
+            background: var(--primary-accent);
+            border-radius: 99px;
+            box-shadow: 0 0 10px rgba(230, 195, 138, 0.6);
+            transition: width 0.3s ease;
         }
 
         /* ── Primary CTA Button ──────────────────────────────────── */
@@ -511,14 +518,14 @@
     <!-- ════════════════════════════════════════════════════════════
          NAVIGATION BAR — Cosmic Forge
     ══════════════════════════════════════════════════════════════ -->
-    <header class="relative z-30 shrink-0" style="background:var(--bg-surface);border-bottom:1px solid var(--border-main);backdrop-filter:blur(20px);">
+    <header class="sticky top-0 z-40 shrink-0" style="background:var(--bg-secondary);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:background 0.3s ease, border-color 0.3s ease;">
         <div class="h-14 px-6 flex items-center justify-between max-w-screen-2xl mx-auto w-full">
 
             <!-- Left: Brand (Directive 3: Minimalist Code Captain SVG Logo) -->
             <div class="flex items-center space-x-6">
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('hub')">
                     <!-- Logo mark: Code Captain Helm Wheel -->
-                    <div style="width:34px;height:34px;border-radius:10px;background:#ffffff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(247,225,192,0.3);border:1px solid #d9d2c4;">
+                    <div style="width:34px;height:34px;border-radius:10px;background:#ffffff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(230,195,138,0.3);border:1px solid #d9d2c4;">
                         <svg width="26" height="26" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="50" cy="50" r="32" stroke="#000000" stroke-width="4.5" fill="#f7e1c0"/>
                           <circle cx="50" cy="50" r="24" stroke="#000000" stroke-width="3" fill="none"/>
@@ -539,19 +546,19 @@
                         </svg>
                     </div>
                     <div>
-                        <span style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--text-main);letter-spacing:-0.3px;">Code Captain</span>
+                        <span style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--text-primary);letter-spacing:-0.3px;">Code Captain</span>
                     </div>
                 </div>
 
                 <!-- System status pill -->
-                <div style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;background:rgba(110,207,142,0.06);border:1px solid rgba(110,207,142,0.15);font-size:10px;font-family:'JetBrains Mono',monospace;color:#6ecf8e;">
-                    <span style="width:6px;height:6px;border-radius:50%;background:#6ecf8e;margin-right:6px;animation:glowPulse 2s ease-in-out infinite;display:inline-block;"></span>
+                <div style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--success);">
+                    <span style="width:6px;height:6px;border-radius:50%;background:var(--success);margin-right:6px;animation:glowPulse 2s ease-in-out infinite;display:inline-block;"></span>
                     System Operational
                 </div>
             </div>
 
             <!-- Center: Navigation -->
-            <nav style="display:flex;align-items:center;gap:4px;">
+            <nav style="display:flex;align-items:center;gap:6px;">
                 <button onclick="switchTab('hub')" id="nav-hub" class="nav-tab active">
                     Problem Hub
                 </button>
@@ -566,20 +573,36 @@
                 </button>
             </nav>
 
-            <!-- Right: User Badge + Edit Profile + Theme Toggle + Auth -->
-            <div style="display:flex;align-items:center;gap:8px;">
-                <div id="user-badge" style="display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:99px;background:rgba(247,225,192,0.05);border:1px solid rgba(247,225,192,0.1);">
-                    <span id="user-avatar-initial" style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#f7e1c0,#c4a882);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;font-family:'Outfit',sans-serif;">C</span>
-                    <span id="user-display-name" style="font-size:11px;font-weight:600;color:var(--text-main);font-family:'Inter',sans-serif;">Coder</span>
-                    <span id="user-display-rating" style="display:none;">1200</span>
+            <!-- Right: User Badge Dropdown + Theme Toggle + Auth -->
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div id="user-badge-container" style="position:relative;">
+                    <div id="user-badge" onclick="toggleUserDropdown()" style="display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:99px;background:rgba(230,195,138,0.08);border:1px solid rgba(230,195,138,0.2);cursor:pointer;transition:all 0.2s ease;">
+                        <span id="user-avatar-initial" style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--primary-accent),#c4a882);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;font-family:'Outfit',sans-serif;">C</span>
+                        <span id="user-display-name" style="font-size:12px;font-weight:600;color:var(--text-primary);font-family:'Inter',sans-serif;">Coder</span>
+                        <span style="font-size:10px;color:var(--text-secondary);margin-left:2px;">▾</span>
+                        <span id="user-display-rating" style="display:none;">1200</span>
+                    </div>
+                    <!-- Profile Dropdown Menu -->
+                    <div id="user-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:190px;background:var(--card-surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,0.4);padding:6px;z-index:50;">
+                        <div style="padding:8px 10px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+                            <div style="font-size:12px;font-weight:600;color:var(--text-primary);">Account</div>
+                            <div style="font-size:10px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;">Competitive Programmer</div>
+                        </div>
+                        <button onclick="switchTab('profile');toggleUserDropdown();" style="width:100%;text-align:left;padding:8px 10px;font-size:12px;color:var(--text-primary);border-radius:6px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                            👤 My Profile
+                        </button>
+                        <button onclick="toggleEditProfileModal();toggleUserDropdown();" style="width:100%;text-align:left;padding:8px 10px;font-size:12px;color:var(--text-primary);border-radius:6px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                            ✏️ Edit Profile
+                        </button>
+                        <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+                        <button onclick="handleLogout()" style="width:100%;text-align:left;padding:8px 10px;font-size:12px;color:var(--error);border-radius:6px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='none'">
+                            🚪 Sign Out
+                        </button>
+                    </div>
                 </div>
-                <!-- Directive 2: Edit Profile Button -->
-                <button onclick="toggleEditProfileModal()" class="btn-ghost" style="padding:6px 12px;font-size:11px;">
-                    Edit Profile
-                </button>
-                <!-- Directive 2: Light / Dark Mode Toggle Button -->
-                <button onclick="toggleTheme()" id="theme-toggle-btn" class="btn-ghost" style="padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:4px;" title="Toggle Light/Dark Theme">
-                    <span id="theme-icon">🌙</span>
+                <!-- Light / Dark Mode Toggle Button -->
+                <button onclick="toggleTheme()" id="theme-toggle-btn" class="btn-ghost" style="padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:4px;border-radius:8px;" title="Toggle Light/Dark Theme">
+                    <span id="theme-icon" style="transition:transform 0.3s ease;display:inline-block;">🌙</span>
                 </button>
                 <button onclick="toggleAuthModal()" id="auth-btn" class="btn-primary">
                     Sign In
@@ -1362,6 +1385,34 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 if (icon) icon.innerText = '☀️';
             }
         })();
+
+        // ── Navbar Profile Dropdown & Logout ─────────────────────────
+        function toggleUserDropdown() {
+            const menu = document.getElementById('user-dropdown-menu');
+            if (!menu) return;
+            menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'block' : 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('user-badge-container');
+            const menu = document.getElementById('user-dropdown-menu');
+            if (container && menu && !container.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        function handleLogout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('display_name');
+            const nameEl = document.getElementById('user-display-name');
+            if (nameEl) nameEl.innerText = 'Coder';
+            const authBtn = document.getElementById('auth-btn');
+            if (authBtn) authBtn.innerText = 'Sign In';
+            const menu = document.getElementById('user-dropdown-menu');
+            if (menu) menu.style.display = 'none';
+            window.location.reload();
+        }
 
         function cleanUsername(un) {
             if (!un) return 'Coder';
