@@ -399,6 +399,16 @@
         }
         .problem-row:last-child { border-bottom: none; }
 
+        /* ── Problem Hub Stat Cards ──────────────────────────────── */
+        .stat-card {
+            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            border-color: var(--border-hover) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow-sm);
+        }
+
         /* ── AI Mentor Drawer ────────────────────────────────────── */
         #ai-mentor-drawer {
             background: var(--surface);
@@ -628,6 +638,69 @@
                     </div>
                     <p style="font-size:12px;color:var(--text-muted);margin:0;font-family:'Inter',sans-serif;">LeetCode dataset with vector embeddings &amp; server-side pagination</p>
                     <div class="glow-line" style="margin-top:4px;"></div>
+                </div>
+
+                <!-- Problem Hub Statistics Cards (PH-STATS) -->
+                <div id="hub-stats-grid" class="animate-fade-in" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;">
+                    <!-- Card 1: Total Problems -->
+                    <div class="stat-card" style="background:var(--card-surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;">Total Problems</span>
+                            <span style="font-size:13px;color:var(--primary-accent);">📚</span>
+                        </div>
+                        <div id="stat-total-problems" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px;">-</div>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:'Inter',sans-serif;">Curated catalog</span>
+                    </div>
+
+                    <!-- Card 2: Topics -->
+                    <div class="stat-card" style="background:var(--card-surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;">Topics</span>
+                            <span style="font-size:13px;color:var(--primary-accent);">🏷️</span>
+                        </div>
+                        <div id="stat-total-topics" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px;">35+</div>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:'Inter',sans-serif;">DSA &amp; Systems</span>
+                    </div>
+
+                    <!-- Card 3: Easy -->
+                    <div class="stat-card" style="background:var(--card-surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--success);text-transform:uppercase;letter-spacing:0.06em;">● Easy</span>
+                            <span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;"></span>
+                        </div>
+                        <div id="stat-easy-count" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--success);letter-spacing:-0.5px;">-</div>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:'Inter',sans-serif;">Foundations</span>
+                    </div>
+
+                    <!-- Card 4: Medium -->
+                    <div class="stat-card" style="background:var(--card-surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--warning);text-transform:uppercase;letter-spacing:0.06em;">▲ Medium</span>
+                            <span style="font-size:10px;color:var(--warning);">▲</span>
+                        </div>
+                        <div id="stat-medium-count" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--warning);letter-spacing:-0.5px;">-</div>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:'Inter',sans-serif;">Core Interviews</span>
+                    </div>
+
+                    <!-- Card 5: Hard -->
+                    <div class="stat-card" style="background:var(--card-surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--error);text-transform:uppercase;letter-spacing:0.06em;">◆ Hard</span>
+                            <span style="font-size:10px;color:var(--error);">◆</span>
+                        </div>
+                        <div id="stat-hard-count" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--error);letter-spacing:-0.5px;">-</div>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:'Inter',sans-serif;">Advanced Mastery</span>
+                    </div>
+
+                    <!-- Card 6: Acceptance Rate -->
+                    <div class="stat-card" style="background:var(--card-surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;">Avg Acceptance</span>
+                            <span style="font-size:13px;color:var(--primary-accent);">📈</span>
+                        </div>
+                        <div id="stat-avg-acc" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px;">-</div>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:'Inter',sans-serif;">Submission ratio</span>
+                    </div>
                 </div>
 
                 <!-- Search -->
@@ -1196,6 +1269,54 @@ def twoSum(nums: list[int], target: int) -> list[int]:
         let currentAuthMode = 'login';
 
         // DIRECTIVE 1: Fetch Problems with Correct Pagination Math (page, limit, total_count)
+        function animateCounter(elementId, targetNumber, duration = 600) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const start = 0;
+            const startTime = performance.now();
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (targetNumber - start) * ease);
+                el.innerText = current.toLocaleString();
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    el.innerText = targetNumber.toLocaleString();
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function updateProblemStats(problems, total) {
+            if (!problems || problems.length === 0) return;
+            const count = total || problems.length;
+            
+            let easy = 0, med = 0, hard = 0, sumAcc = 0;
+            problems.forEach(p => {
+                if (p.difficulty === 'Easy') easy++;
+                else if (p.difficulty === 'Medium') med++;
+                else if (p.difficulty === 'Hard') hard++;
+                const accVal = parseFloat(p.acc) || 55.0;
+                sumAcc += accVal;
+            });
+
+            const scale = count > problems.length ? (count / problems.length) : 1;
+            const finalEasy = Math.round(easy * scale);
+            const finalMed = Math.round(med * scale);
+            const finalHard = Math.round(hard * scale);
+            const avgAcc = (sumAcc / problems.length).toFixed(1) + '%';
+
+            animateCounter('stat-total-problems', count);
+            animateCounter('stat-easy-count', finalEasy);
+            animateCounter('stat-medium-count', finalMed);
+            animateCounter('stat-hard-count', finalHard);
+            
+            const accEl = document.getElementById('stat-avg-acc');
+            if (accEl) accEl.innerText = avgAcc;
+        }
+
         async function fetchProblems(page = 1, limit = 50) {
             const container = document.getElementById('problem-list-container');
             if (container) {
@@ -1227,6 +1348,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                             acc: p.acceptance_rate !== undefined && p.acceptance_rate !== null ? `${parseFloat(p.acceptance_rate).toFixed(1)}%` : "62.4%"
                         }));
 
+                        updateProblemStats(cachedProblems, totalCount);
                         renderProblemList(cachedProblems);
 
                         // Update Pagination Footer
@@ -1245,6 +1367,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             // Client Fallback Set
             cachedProblems = FALLBACK_PROBLEMS;
             totalCount = FALLBACK_PROBLEMS.length;
+            updateProblemStats(cachedProblems, totalCount);
             renderProblemList(cachedProblems);
             document.getElementById('pagination-info').innerText = `Page 1 of 1 (${totalCount} problems)`;
             document.getElementById('btn-prev-page').disabled = true;
