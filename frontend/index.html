@@ -1225,6 +1225,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
 
             container.innerHTML = problems.map(p => {
                 const diffClass = p.difficulty === 'Easy' ? 'badge-easy' : p.difficulty === 'Medium' ? 'badge-medium' : 'badge-hard';
+                const diffShape = p.difficulty === 'Easy' ? '●' : p.difficulty === 'Medium' ? '▲' : '◆';
                 const tags = p.tags.slice(0, 2).map(t =>
                     `<span style="background:var(--bg-elevated);border:1px solid var(--border-main);color:var(--text-muted);padding:2px 7px;border-radius:6px;font-size:10px;">${t}</span>`
                 ).join('');
@@ -1233,7 +1234,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                     <div style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.id}</div>
                     <div style="font-weight:600;color:var(--text-main);transition:color 0.15s;">${p.title}</div>
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;">${p.difficulty}</span>
+                        <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span aria-hidden="true">${diffShape}</span> ${p.difficulty}</span>
                         ${tags}
                     </div>
                     <div style="text-align:right;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.acc}</div>
