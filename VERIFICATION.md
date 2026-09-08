@@ -7,3 +7,5 @@
 | **LB-01** | 946bac5 | Y | Y | Removed ZSET column and subtitle; table renders cleanly |
 | **PH-04** | 4dae3b5 | Y | Y | Clean problem number without #, 1-decimal acceptance rate, tabular-nums font |
 | **PH-02** | 6cbc9e0 | Y | Y | WCAG 1.4.1 compliant difficulty badges (● Easy, ▲ Medium, ◆ Hard) |
+| **DS-01** | daf917e | Y | Y | Scalable CSS design tokens for Dark/Light themes with exact SaaS hex colors |
+| **NAV-01** | 1b6860f | Y | Y | Sticky blur navbar, active indicator, profile dropdown with logout |
