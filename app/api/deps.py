@@ -1,5 +1,4 @@
 import jwt
-from typing import Optional
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
@@ -36,29 +35,6 @@ async def get_current_user(
     if user is None:
         raise AuthenticationError("User associated with token no longer exists")
     return user
-
-
-async def get_optional_current_user(
-    token: Optional[str] = Depends(OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)),
-    db: AsyncSession = Depends(get_db),
-) -> Optional[User]:
-    """
-    Optional authentication dependency. Returns User if a valid Bearer token is provided, else None.
-    Does not raise AuthenticationError on missing credentials.
-    """
-    if not token:
-        return None
-    try:
-        payload = decode_access_token(token)
-        user_id_str = payload.get("sub")
-        if user_id_str is None:
-            return None
-        user_id = int(user_id_str)
-    except Exception:
-        return None
-
-    result = await db.execute(select(User).where(User.user_id == user_id))
-    return result.scalar_one_or_none()
 
 
 async def get_current_admin_user(

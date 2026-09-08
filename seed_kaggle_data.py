@@ -268,8 +268,6 @@ async def seed_kaggle_dataset(csv_filepath: str = "leetcode_questions.csv", batc
         if not res_u.scalar_one_or_none():
             session.add(User(user_id=1, username="guest_sandbox", password_hash="sandbox_nopass", rating=1500))
             await session.commit()
-            await session.execute(text("SELECT setval('users_user_id_seq', (SELECT COALESCE(MAX(user_id), 1) FROM users));"))
-            await session.commit()
 
         # Extract and Bulk Insert Unique Tags
         all_tags = set()

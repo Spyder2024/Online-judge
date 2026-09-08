@@ -14,16 +14,6 @@ if db_url.startswith("postgres://"):
 elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
     db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-# Normalize asyncpg query parameters (convert sslmode -> ssl, strip channel_binding)
-if "sslmode=" in db_url:
-    db_url = db_url.replace("sslmode=require", "ssl=require").replace("sslmode=prefer", "ssl=prefer")
-if "&channel_binding=" in db_url:
-    import re
-    db_url = re.sub(r"&channel_binding=[^&]*", "", db_url)
-if "?channel_binding=" in db_url:
-    import re
-    db_url = re.sub(r"\?channel_binding=[^&]*&?", "?", db_url)
-
 # Create async engine using asyncpg driver with tuned connection pool parameters
 async_engine: AsyncEngine = create_async_engine(
     db_url,
