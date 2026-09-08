@@ -36,3 +36,5 @@ scratch_audit.py
 node_modules/
 compiler-engine/node_modules/
 compiler-engine/temp/
+.vercel/
+.env.local
