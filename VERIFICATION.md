@@ -10,3 +10,4 @@
 | **DS-01** | daf917e | Y | Y | Scalable CSS design tokens for Dark/Light themes with exact SaaS hex colors |
 | **NAV-01** | 1b6860f | Y | Y | Sticky blur navbar, active indicator, profile dropdown with logout |
 | **PH-STATS** | 8f86616 | Y | Y | 6 metric cards (Total, Topics, Easy, Medium, Hard, Avg Acc) with animated counters |
+| **PH-SEARCH** | 9fd7bf7 | Y | Y | Search filters toolbar, Ctrl+K shortcut, sticky table header, solved indicator |
