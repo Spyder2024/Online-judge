@@ -703,30 +703,63 @@
                     </div>
                 </div>
 
-                <!-- Search -->
-                <div class="animate-fade-in" style="position:relative;">
-                    <i data-lucide="search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted);pointer-events:none;"></i>
-                    <input
-                        type="text"
-                        id="ai-search-input"
-                        onkeyup="performInstantSearch()"
-                        placeholder="Search by title, topic, or difficulty..."
-                        class="forge-input"
-                        style="padding-left:40px;font-size:12px;"
-                    />
+                <!-- Search & Filters Toolbar (PH-SEARCH) -->
+                <div class="animate-fade-in" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                    <!-- Search Input with Ctrl+K Badge -->
+                    <div style="position:relative;flex:1;min-width:260px;">
+                        <i data-lucide="search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-secondary);pointer-events:none;"></i>
+                        <input
+                            type="text"
+                            id="ai-search-input"
+                            onkeyup="performInstantSearch()"
+                            placeholder="Search by title, topic, or difficulty..."
+                            class="forge-input"
+                            style="padding-left:40px;padding-right:70px;font-size:12px;width:100%;"
+                        />
+                        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-secondary);padding:2px 6px;border-radius:4px;background:var(--bg-elevated);border:1px solid var(--border);pointer-events:none;">Ctrl+K</span>
+                    </div>
+
+                    <!-- Difficulty Filter -->
+                    <select id="filter-difficulty" onchange="performInstantSearch()" class="forge-input" style="width:auto;min-width:130px;font-size:12px;padding:8px 12px;background:var(--card-surface);color:var(--text-primary);cursor:pointer;">
+                        <option value="all">All Difficulties</option>
+                        <option value="easy">● Easy</option>
+                        <option value="medium">▲ Medium</option>
+                        <option value="hard">◆ Hard</option>
+                    </select>
+
+                    <!-- Topic Filter -->
+                    <select id="filter-topic" onchange="performInstantSearch()" class="forge-input" style="width:auto;min-width:130px;font-size:12px;padding:8px 12px;background:var(--card-surface);color:var(--text-primary);cursor:pointer;">
+                        <option value="all">All Topics</option>
+                        <option value="array">Array</option>
+                        <option value="string">String</option>
+                        <option value="two pointers">Two Pointers</option>
+                        <option value="dynamic programming">Dynamic Programming</option>
+                        <option value="tree">Tree</option>
+                        <option value="graph">Graph</option>
+                        <option value="hash table">Hash Table</option>
+                        <option value="binary search">Binary Search</option>
+                        <option value="math">Math</option>
+                    </select>
+
+                    <!-- Status Filter -->
+                    <select id="filter-status" onchange="performInstantSearch()" class="forge-input" style="width:auto;min-width:120px;font-size:12px;padding:8px 12px;background:var(--card-surface);color:var(--text-primary);cursor:pointer;">
+                        <option value="all">All Status</option>
+                        <option value="solved">✓ Solved</option>
+                        <option value="unsolved">○ Unsolved</option>
+                    </select>
                 </div>
 
                 <!-- Problem Table -->
-                <div class="animate-fade-in" style="border:1px solid var(--border-main);border-radius:12px;overflow:hidden;">
-                    <!-- Table Header -->
-                    <div style="display:grid;grid-template-columns:50px 1fr 160px 100px;padding:10px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border-main);">
-                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">#</span>
-                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Title</span>
-                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Difficulty &amp; Tags</span>
-                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;text-align:right;">Acceptance</span>
+                <div class="animate-fade-in" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card-surface);">
+                    <!-- Table Header (Sticky) -->
+                    <div style="position:sticky;top:0;z-index:10;display:grid;grid-template-columns:60px 1fr 180px 100px;padding:10px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);">
+                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Status / #</span>
+                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Title</span>
+                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Difficulty &amp; Tags</span>
+                        <span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;text-align:right;">Acceptance</span>
                     </div>
                     <!-- Problem List -->
-                    <div id="problem-list-container" style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg-surface);">
+                    <div id="problem-list-container" style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--card-surface);">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
@@ -1381,47 +1414,86 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             }
         }
 
-        // Render Problems List
+        // Render Problems List (PH-SEARCH)
         function renderProblemList(problems) {
             const container = document.getElementById('problem-list-container');
             if (!problems || problems.length === 0) {
-                container.innerHTML = `<div style="padding:32px;text-align:center;color:#6b6560;font-family:'JetBrains Mono',monospace;font-size:12px;">No problems found on this page.</div>`;
+                container.innerHTML = `<div style="padding:48px 24px;text-align:center;color:var(--text-secondary);font-family:'Inter',sans-serif;font-size:13px;">
+                    <div style="font-size:24px;margin-bottom:8px;">🔍</div>
+                    <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">No matching problems found</div>
+                    <div style="font-size:11px;color:var(--text-muted);">Try adjusting your search query or clear your filter criteria.</div>
+                </div>`;
                 return;
             }
+
+            const solvedIds = JSON.parse(localStorage.getItem('solved_problems') || '[]');
 
             container.innerHTML = problems.map(p => {
                 const diffClass = p.difficulty === 'Easy' ? 'badge-easy' : p.difficulty === 'Medium' ? 'badge-medium' : 'badge-hard';
                 const diffShape = p.difficulty === 'Easy' ? '●' : p.difficulty === 'Medium' ? '▲' : '◆';
+                const isSolved = solvedIds.includes(p.id);
                 const tags = p.tags.slice(0, 2).map(t =>
-                    `<span style="background:var(--bg-elevated);border:1px solid var(--border-main);color:var(--text-muted);padding:2px 7px;border-radius:6px;font-size:10px;">${t}</span>`
+                    `<span style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:2px 7px;border-radius:6px;font-size:10px;">${t}</span>`
                 ).join('');
                 return `
-                <div onclick="selectProblem(${p.id})" class="problem-row" style="display:grid;grid-template-columns:50px 1fr 160px 100px;padding:12px 16px;align-items:center;background:var(--bg-surface);border-bottom:1px solid var(--border-main);">
-                    <div style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.id}</div>
-                    <div style="font-weight:600;color:var(--text-main);transition:color 0.15s;">${p.title}</div>
+                <div onclick="selectProblem(${p.id})" class="problem-row" style="display:grid;grid-template-columns:60px 1fr 180px 100px;padding:12px 16px;align-items:center;background:var(--card-surface);border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.15s ease;">
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span aria-hidden="true">${diffShape}</span> ${p.difficulty}</span>
+                        ${isSolved ? '<span style="color:var(--success);font-size:12px;" title="Solved">✓</span>' : '<span style="color:var(--text-muted);font-size:10px;opacity:0.4;">○</span>'}
+                        <span style="color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.id}</span>
+                    </div>
+                    <div style="font-weight:600;color:var(--text-primary);transition:color 0.15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">${p.title}</div>
+                    <div style="display:flex;align-items:center;gap:6px;overflow:hidden;">
+                        <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;"><span aria-hidden="true">${diffShape}</span> ${p.difficulty}</span>
                         ${tags}
                     </div>
-                    <div style="text-align:right;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.acc}</div>
+                    <div style="text-align:right;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.acc}</div>
                 </div>`;
             }).join('');
         }
 
-        // Instant Search Logic
+        // Search & Multi-Filter Logic (PH-SEARCH)
         function performInstantSearch() {
-            const query = document.getElementById('ai-search-input').value.toLowerCase().trim();
-            if (!query) {
-                renderProblemList(cachedProblems);
-                return;
+            const query = (document.getElementById('ai-search-input')?.value || '').toLowerCase().trim();
+            const diffFilter = document.getElementById('filter-difficulty')?.value || 'all';
+            const topicFilter = document.getElementById('filter-topic')?.value || 'all';
+            const statusFilter = document.getElementById('filter-status')?.value || 'all';
+            const solvedIds = JSON.parse(localStorage.getItem('solved_problems') || '[]');
+
+            let matches = cachedProblems;
+
+            if (diffFilter !== 'all') {
+                matches = matches.filter(p => p.difficulty.toLowerCase() === diffFilter.toLowerCase());
             }
-            const matches = cachedProblems.filter(p =>
-                p.title.toLowerCase().includes(query) ||
-                p.tags.some(t => t.toLowerCase().includes(query)) ||
-                p.difficulty.toLowerCase().includes(query)
-            );
+            if (topicFilter !== 'all') {
+                matches = matches.filter(p => p.tags.some(t => t.toLowerCase().includes(topicFilter.toLowerCase())));
+            }
+            if (statusFilter === 'solved') {
+                matches = matches.filter(p => solvedIds.includes(p.id));
+            } else if (statusFilter === 'unsolved') {
+                matches = matches.filter(p => !solvedIds.includes(p.id));
+            }
+            if (query) {
+                matches = matches.filter(p =>
+                    p.title.toLowerCase().includes(query) ||
+                    p.tags.some(t => t.toLowerCase().includes(query)) ||
+                    p.difficulty.toLowerCase().includes(query)
+                );
+            }
             renderProblemList(matches);
         }
+
+        // Global Ctrl+K Shortcut to focus search
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                switchTab('hub');
+                const searchInput = document.getElementById('ai-search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+        });
 
         // Select Problem & Reset Editor with Blank Template
         function selectProblem(id) {
