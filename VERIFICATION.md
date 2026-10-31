@@ -12,3 +12,4 @@
 | **PH-STATS** | 8f86616 | Y | Y | 6 metric cards (Total, Topics, Easy, Medium, Hard, Avg Acc) with animated counters |
 | **PH-SEARCH** | 9fd7bf7 | Y | Y | Search filters toolbar, Ctrl+K shortcut, sticky table header, solved indicator |
 | **ARENA-LAYOUT** | de9335f | Y | Y | 40/60 draggable split, metadata header, font size controls, fullscreen toggle |
+| **SEC-P0** | 9109d63 | Y | Y | Fixed SEC-01 (/run RCE removed), SEC-03 (Admin privilege escalation blocked), and SEC-04 (Submission IDOR protected) |
