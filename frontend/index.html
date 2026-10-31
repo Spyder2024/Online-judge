@@ -2140,6 +2140,8 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             const tabS  = document.getElementById('tab-signup');
             const btn   = document.getElementById('auth-submit-btn');
             const title = document.getElementById('auth-modal-title');
+            const errBox = document.getElementById('auth-error-msg');
+            if (errBox) errBox.classList.add('hidden');
 
             const activeStyle   = 'padding:8px 16px;font-size:12px;font-family:Inter,sans-serif;font-weight:600;color:#f7e1c0;background:none;border:none;border-bottom:2px solid #f7e1c0;margin-bottom:-1px;cursor:pointer;transition:all 0.2s;';
             const inactiveStyle = 'padding:8px 16px;font-size:12px;font-family:Inter,sans-serif;font-weight:500;color:#6b6560;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;transition:all 0.2s;';
@@ -2177,8 +2179,27 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 const res = await fetch(endpoint, { method: 'POST', headers: headers, body: body });
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.access_token) {
-                        localStorage.setItem('access_token', data.access_token);
+                    let token = data.access_token;
+
+                    // If newly created account, auto-login to obtain JWT
+                    if (!token && currentAuthMode === 'signup') {
+                        try {
+                            const loginRes = await fetch('/api/v1/auth/login-json', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ username: username, password: password })
+                            });
+                            if (loginRes.ok) {
+                                const loginData = await loginRes.json();
+                                token = loginData.access_token;
+                            }
+                        } catch (e) {
+                            console.warn("Auto-login after signup skipped:", e);
+                        }
+                    }
+
+                    if (token) {
+                        localStorage.setItem('access_token', token);
                     }
                     const cleanUn = cleanUsername(username);
                     localStorage.setItem('username', cleanUn);
@@ -2187,9 +2208,26 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                     const avatarInit = document.getElementById('user-avatar-initial');
                     if (avatarInit) avatarInit.innerText = cleanUn.charAt(0).toUpperCase();
                     toggleAuthModal();
+                    fetchProfileData();
                 } else {
                     const err = await res.json();
-                    errBox.innerText = err.detail || "Authentication failed.";
+                    let msg = "Authentication failed.";
+                    if (err.error && err.error.message) {
+                        msg = err.error.message;
+                    } else if (err.detail) {
+                        if (Array.isArray(err.detail)) {
+                            msg = err.detail.map(d => d.msg || d.message || JSON.stringify(d)).join(", ");
+                        } else {
+                            msg = err.detail;
+                        }
+                    } else if (err.message) {
+                        msg = err.message;
+                    }
+
+                    if (msg.toLowerCase().includes("already exists")) {
+                        msg = "An account with this username already exists. Please switch to the Login tab.";
+                    }
+                    errBox.innerText = msg;
                     errBox.classList.remove('hidden');
                 }
             } catch (err) {
