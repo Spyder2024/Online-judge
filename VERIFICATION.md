@@ -16,5 +16,5 @@
 | **SEC-P1** | caed23c | Y | Y | Fixed SEC-05 (Storage presigned authorization), SEC-06 (OAuth CSRF state), SEC-07 (Problem search NameError + Admin creation guard) |
 | **SEC-P2** | c8e6cec | Y | Y | Fixed SEC-02 (Compiler container unprivileged user + language guard), SEC-08 (Production SECRET_KEY validation), SEC-09 (Stored XSS escaping), SEC-10 (Strict CORS origins & regex) |
 | **PHASE-A** | 15e7db3 | Y | Y | Clean problem titles (A-01), live health polling badge (A-02), pagination UI with total counter (A-03), real profile stats wiring (A-04) |
-| **PHASE-B** | [pending] | Y | Y | Arena Markdown statement renderer (B-01), language preference & draft autosave (B-02), Submissions tab & dynamic problem_id submission (B-03) |
-| **PHASE-C** | [pending] | Y | Y | Top 10 canonical showcase problems seeded with real statements, examples, constraints, and test cases in Neon PostgreSQL |
+| **PHASE-B** | b9838be | Y | Y | Arena Markdown statement renderer (B-01), language preference & draft autosave (B-02), Submissions tab & dynamic problem_id submission (B-03) |
+| **PHASE-C** | b9838be | Y | Y | Top 10 canonical showcase problems seeded with real statements, examples, constraints, and test cases in Neon PostgreSQL |
