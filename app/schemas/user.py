@@ -10,7 +10,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=128, description="Plaintext password")
-    role: Optional[UserRole] = Field(default=UserRole.CONTESTANT, description="Role assigned upon creation")
 
 
 class UserLogin(BaseModel):

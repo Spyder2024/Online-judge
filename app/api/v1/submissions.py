@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.api.deps import get_current_user
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.submission import Submission, SubmissionVerdict
 from app.models.ai import AsyncTaskLog, TaskStatus
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
@@ -63,12 +63,19 @@ async def submit_code(
 @router.get("/{submission_id}", response_model=SubmissionResponse)
 async def get_submission(
     submission_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Fetch details and verdict of a single submission."""
+    """Fetch details and verdict of a single submission (owner or admin only)."""
     stmt = select(Submission).where(Submission.submission_id == submission_id)
     result = await db.execute(stmt)
     submission = result.scalar_one_or_none()
     if not submission:
         raise HTTPException(status_code=404, detail="Submission not found")
+
+    if current_user.role != UserRole.ADMIN and submission.user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied to this submission"
+        )
     return submission

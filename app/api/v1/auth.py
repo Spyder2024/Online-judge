@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import AuthenticationError, DuplicateResourceError
 from app.core.security import create_access_token, get_password_hash, verify_password
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import Token, UserCreate, UserLogin, UserResponse
 
 logger = get_logger(__name__)
@@ -31,7 +31,7 @@ async def signup(
     Register a new user with secure password hashing (Argon2 via pwdlib).
     Checks for existing username collisions asynchronously.
     """
-    logger.info("Registering new user", username=user_in.username, role=user_in.role)
+    logger.info("Registering new user", username=user_in.username)
     result = await db.execute(select(User).where(User.username == user_in.username))
     existing_user = result.scalar_one_or_none()
     if existing_user is not None:
@@ -41,7 +41,7 @@ async def signup(
     new_user = User(
         username=user_in.username,
         password_hash=hashed_pw,
-        role=user_in.role or "Contestant",
+        role=UserRole.CONTESTANT,
         rating=1200,
     )
     db.add(new_user)
