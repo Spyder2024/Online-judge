@@ -15,3 +15,4 @@
 | **SEC-P0** | 9109d63 | Y | Y | Fixed SEC-01 (/run RCE removed), SEC-03 (Admin privilege escalation blocked), and SEC-04 (Submission IDOR protected) |
 | **SEC-P1** | caed23c | Y | Y | Fixed SEC-05 (Storage presigned authorization), SEC-06 (OAuth CSRF state), SEC-07 (Problem search NameError + Admin creation guard) |
 | **SEC-P2** | c8e6cec | Y | Y | Fixed SEC-02 (Compiler container unprivileged user + language guard), SEC-08 (Production SECRET_KEY validation), SEC-09 (Stored XSS escaping), SEC-10 (Strict CORS origins & regex) |
+| **PHASE-A** | [pending] | Y | Y | Clean problem titles (A-01), live health polling badge (A-02), pagination UI with total counter (A-03), real profile stats wiring (A-04) |

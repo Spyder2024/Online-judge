@@ -571,9 +571,9 @@
                 </div>
 
                 <!-- System status pill -->
-                <div style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--success);">
-                    <span style="width:6px;height:6px;border-radius:50%;background:var(--success);margin-right:6px;animation:glowPulse 2s ease-in-out infinite;display:inline-block;"></span>
-                    System Operational
+                <div id="system-status-pill" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--success);transition:all 0.4s ease;">
+                    <span id="system-status-dot" style="width:6px;height:6px;border-radius:50%;background:var(--success);margin-right:6px;animation:glowPulse 2s ease-in-out infinite;display:inline-block;transition:background 0.4s;"></span>
+                    <span id="system-status-text">System Operational</span>
                 </div>
             </div>
 
@@ -775,13 +775,20 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="animate-fade-in" style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">
-                    <div style="font-size:11px;color:#6b6560;font-family:'JetBrains Mono',monospace;">
-                        <span id="pagination-info" style="color:#d9d2c4;">Page 1 of 1 (0 problems)</span>
+                <div class="animate-fade-in" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--card-surface);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span id="pagination-info" style="color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;font-weight:500;">Showing 1–50 of 0 problems</span>
+                        <span id="pagination-page" style="color:var(--text-secondary);font-size:11px;font-family:'JetBrains Mono',monospace;background:var(--bg-elevated);padding:2px 8px;border-radius:6px;border:1px solid var(--border);">Page 1 of 1</span>
                     </div>
                     <div style="display:flex;gap:8px;">
-                        <button onclick="changePage(-1)" id="btn-prev-page" class="btn-ghost" disabled>← Previous</button>
-                        <button onclick="changePage(1)"  id="btn-next-page" class="btn-ghost">Next →</button>
+                        <button onclick="changePage(-1)" id="btn-prev-page" class="btn-ghost" disabled style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;font-size:11px;border-radius:8px;border:1px solid var(--border);">
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            Prev
+                        </button>
+                        <button onclick="changePage(1)" id="btn-next-page" class="btn-ghost" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;font-size:11px;border-radius:8px;border:1px solid var(--border);">
+                            Next
+                            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1214,6 +1221,51 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 .replace(/'/g, '&#39;');
         }
 
+        // A-01: Strip seeded '#NNNN. ' prefix from LeetCode problem titles
+        function cleanTitle(raw) {
+            if (!raw) return '';
+            return String(raw).replace(/^#?\d+\.\s*/, '').trim();
+        }
+        // A-02: Live system health badge — polls /health every 30s
+        async function refreshSystemStatus() {
+            const pill = document.getElementById('system-status-pill');
+            const dot  = document.getElementById('system-status-dot');
+            const txt  = document.getElementById('system-status-text');
+            if (!pill || !dot || !txt) return;
+            try {
+                const r = await fetch('/health', { cache: 'no-store' });
+                const d = r.ok ? await r.json() : {};
+                const status = (d.status || '').toLowerCase();
+                if (r.ok && (status === 'ok' || status === 'healthy')) {
+                    pill.style.background = 'rgba(34,197,94,0.08)';
+                    pill.style.borderColor = 'rgba(34,197,94,0.2)';
+                    pill.style.color = 'var(--success)';
+                    dot.style.background = 'var(--success)';
+                    dot.style.animation = 'glowPulse 2s ease-in-out infinite';
+                    txt.innerText = 'System Operational';
+                } else if (r.ok) {
+                    pill.style.background = 'rgba(245,158,11,0.08)';
+                    pill.style.borderColor = 'rgba(245,158,11,0.3)';
+                    pill.style.color = '#F59E0B';
+                    dot.style.background = '#F59E0B';
+                    dot.style.animation = 'none';
+                    txt.innerText = 'Degraded';
+                }
+            } catch (e) {
+                if (pill) {
+                    pill.style.background = 'rgba(239,68,68,0.08)';
+                    pill.style.borderColor = 'rgba(239,68,68,0.3)';
+                    pill.style.color = '#EF4444';
+                    dot.style.background = '#EF4444';
+                    dot.style.animation = 'none';
+                    txt.innerText = 'Outage';
+                }
+            }
+        }
+        refreshSystemStatus();
+        setInterval(refreshSystemStatus, 30000);
+
+
         // ── Module 3: OAuth URL-fragment token handler ────────────────────────
         // After the backend OAuth callback, the browser is redirected to:
         //   /#oauth_success&token=<JWT>&username=<name>
@@ -1421,11 +1473,12 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                     const data = await res.json();
                     const items = data.items || data;
                     totalCount = data.total_count || (Array.isArray(items) ? items.length : 0);
+                    window._totalProblemCount = totalCount;
 
                     if (Array.isArray(items) && items.length > 0) {
                         cachedProblems = items.map(p => ({
                             id: p.problem_id,
-                            title: p.title,
+                            title: cleanTitle(p.title),
                             difficulty: p.difficulty,
                             statement: p.statement_text,
                             tags: p.tags ? p.tags.map(t => t.tag_name) : ["Algorithm"],
@@ -1437,7 +1490,11 @@ def twoSum(nums: list[int], target: int) -> list[int]:
 
                         // Update Pagination Footer
                         const totalPages = Math.ceil(totalCount / limit) || 1;
-                        document.getElementById('pagination-info').innerText = `Page ${page} of ${totalPages} (${totalCount} total problems)`;
+                        const startItem = (page - 1) * limit + 1;
+                        const endItem   = Math.min(page * limit, totalCount);
+                        document.getElementById('pagination-info').innerText = `Showing ${startItem}–${endItem} of ${totalCount} problems`;
+                        const pageLabelEl = document.getElementById('pagination-page');
+                        if (pageLabelEl) pageLabelEl.innerText = `Page ${page} of ${totalPages}`;
 
                         document.getElementById('btn-prev-page').disabled = (page <= 1);
                         document.getElementById('btn-next-page').disabled = (page * limit >= totalCount);
@@ -1453,7 +1510,9 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             totalCount = FALLBACK_PROBLEMS.length;
             updateProblemStats(cachedProblems, totalCount);
             renderProblemList(cachedProblems);
-            document.getElementById('pagination-info').innerText = `Page 1 of 1 (${totalCount} problems)`;
+            document.getElementById('pagination-info').innerText = `Showing 1–${totalCount} of ${totalCount} problems`;
+            const pageLabelFallback = document.getElementById('pagination-page');
+            if (pageLabelFallback) pageLabelFallback.innerText = 'Page 1 of 1';
             document.getElementById('btn-prev-page').disabled = true;
             document.getElementById('btn-next-page').disabled = true;
         }
@@ -1551,7 +1610,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             const problem = cachedProblems.find(p => p.id === id);
             if (problem) {
                 const titleEl = document.getElementById('arena-problem-title');
-                if (titleEl) titleEl.innerText = `${problem.id}. ${problem.title}`;
+                if (titleEl) titleEl.innerText = `${problem.id}. ${cleanTitle(problem.title)}`;
                 
                 const diffEl = document.getElementById('arena-problem-difficulty');
                 if (diffEl) {
@@ -1571,7 +1630,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 const textEl = document.getElementById('arena-text');
                 if (textEl) textEl.innerText = problem.statement;
 
-                const funcName  = problem.title.replace(/[^a-zA-Z0-9]/g, '');
+                const funcName  = cleanTitle(problem.title).replace(/[^a-zA-Z0-9]/g, '');
                 const cleanFunc = funcName.charAt(0).toLowerCase() + funcName.slice(1);
                 const template  = `# Solution template for ${problem.title}\ndef ${cleanFunc}():\n    # Write your solution algorithm here\n    pass\n`;
                 setCodeValue(template);
@@ -1807,7 +1866,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
             try {
-                const resp = await fetch('/api/v1/users/me', { headers });
+                const resp = await fetch('/api/v1/profiles/me', { headers });
                 if (resp.ok) {
                     const data = await resp.json();
                     
@@ -1833,7 +1892,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                     if (ratingEl) ratingEl.innerText = data.rating || 1200;
                     
                     const solved = data.total_solved || 0;
-                    const total = 4044;
+                    const total = window._totalProblemCount || 524;
                     const solvedEl = document.getElementById('solved-count');
                     if (solvedEl) solvedEl.innerText = solved;
                     const subEl = document.getElementById('total-sub-count');
