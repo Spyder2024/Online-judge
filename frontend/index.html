@@ -1203,6 +1203,17 @@ def twoSum(nums: list[int], target: int) -> list[int]:
     <script>
         lucide.createIcons();
 
+        // ── XSS Sanitization Helper (SEC-09) ──────────────────────────────────
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         // ── Module 3: OAuth URL-fragment token handler ────────────────────────
         // After the backend OAuth callback, the browser is redirected to:
         //   /#oauth_success&token=<JWT>&username=<name>
@@ -1473,20 +1484,20 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 const diffShape = p.difficulty === 'Easy' ? '●' : p.difficulty === 'Medium' ? '▲' : '◆';
                 const isSolved = solvedIds.includes(p.id);
                 const tags = p.tags.slice(0, 2).map(t =>
-                    `<span style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:2px 7px;border-radius:6px;font-size:10px;">${t}</span>`
+                    `<span style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);padding:2px 7px;border-radius:6px;font-size:10px;">${escapeHtml(t)}</span>`
                 ).join('');
                 return `
-                <div onclick="selectProblem(${p.id})" class="problem-row" style="display:grid;grid-template-columns:60px 1fr 180px 100px;padding:12px 16px;align-items:center;background:var(--card-surface);border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.15s ease;">
+                <div onclick="selectProblem(${Number(p.id)})" class="problem-row" style="display:grid;grid-template-columns:60px 1fr 180px 100px;padding:12px 16px;align-items:center;background:var(--card-surface);border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.15s ease;">
                     <div style="display:flex;align-items:center;gap:6px;">
                         ${isSolved ? '<span style="color:var(--success);font-size:12px;" title="Solved">✓</span>' : '<span style="color:var(--text-muted);font-size:10px;opacity:0.4;">○</span>'}
-                        <span style="color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.id}</span>
+                        <span style="color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${Number(p.id)}</span>
                     </div>
-                    <div style="font-weight:600;color:var(--text-primary);transition:color 0.15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">${p.title}</div>
+                    <div style="font-weight:600;color:var(--text-primary);transition:color 0.15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">${escapeHtml(p.title)}</div>
                     <div style="display:flex;align-items:center;gap:6px;overflow:hidden;">
-                        <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;"><span aria-hidden="true">${diffShape}</span> ${p.difficulty}</span>
+                        <span class="${diffClass}" style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;"><span aria-hidden="true">${diffShape}</span> ${escapeHtml(p.difficulty)}</span>
                         ${tags}
                     </div>
-                    <div style="text-align:right;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${p.acc}</div>
+                    <div style="text-align:right;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;">${escapeHtml(p.acc)}</div>
                 </div>`;
             }).join('');
         }
@@ -1878,11 +1889,11 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                         feed.innerHTML = items.map(sub => `
                             <div style="padding:12px 16px;border-radius:10px;background:var(--bg-elevated);border:1px solid var(--border-main);display:flex;justify-content:space-between;align-items:center;">
                                 <div style="display:flex;align-items:center;gap:12px;">
-                                    <span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;${sub.verdict === 'ACCEPTED' ? 'background:rgba(110,207,142,0.1);color:#6ecf8e;' : 'background:rgba(255,235,235,0.1);color:#ffebeb;'}">${sub.verdict || 'ACCEPTED'}</span>
-                                    <span style="font-size:12px;font-weight:600;color:var(--text-main);font-family:'Inter',sans-serif;">${sub.problem_title || 'Problem'}</span>
+                                    <span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;${sub.verdict === 'ACCEPTED' ? 'background:rgba(110,207,142,0.1);color:#6ecf8e;' : 'background:rgba(255,235,235,0.1);color:#ffebeb;'}">${escapeHtml(sub.verdict || 'ACCEPTED')}</span>
+                                    <span style="font-size:12px;font-weight:600;color:var(--text-main);font-family:'Inter',sans-serif;">${escapeHtml(sub.problem_title || 'Problem')}</span>
                                 </div>
                                 <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">
-                                    ${sub.language_enum || 'PYTHON3'} · ${new Date(sub.created_at || Date.now()).toLocaleDateString()}
+                                    ${escapeHtml(sub.language_enum || 'PYTHON3')} · ${new Date(sub.created_at || Date.now()).toLocaleDateString()}
                                 </div>
                             </div>
                         `).join('');
@@ -2037,7 +2048,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                     const data = JSON.parse(event.data);
 
                     if (data.event !== 'CONNECTED') {
-                        consoleLog.innerHTML += `<p style="color:var(--text-main);">&gt; [WS EVENT] ${JSON.stringify(data)}</p>`;
+                        consoleLog.innerHTML += `<p style="color:var(--text-main);">&gt; [WS EVENT] ${escapeHtml(JSON.stringify(data))}</p>`;
                         consoleLog.scrollTop  = consoleLog.scrollHeight;
                     }
 
@@ -2069,7 +2080,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
 
             } catch (e) {
                 console.warn("Submission error:", e);
-                consoleLog.innerHTML += `<p style="color:#ffebeb;">&gt; Submission Error: ${e.message}</p>`;
+                consoleLog.innerHTML += `<p style="color:#ffebeb;">&gt; Submission Error: ${escapeHtml(e.message)}</p>`;
                 badge.innerText = 'Error';
             }
         }
@@ -2136,9 +2147,9 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             const renderRow = (rank, user, score, penalty) => `
                 <tr class="leaderboard-row">
                     <td style="padding:14px 16px;font-weight:700;color:${rank === 1 ? '#f7e1c0' : '#6b6560'};">${rank === 1 ? '🥇' : '#' + rank}</td>
-                    <td style="padding:14px 16px;color:#fff;font-weight:600;font-family:'Inter',sans-serif;">${user}</td>
-                    <td style="padding:14px 16px;color:#6ecf8e;font-weight:700;">${score} pts</td>
-                    <td style="padding:14px 16px;color:#6b6560;">${penalty}</td>
+                    <td style="padding:14px 16px;color:#fff;font-weight:600;font-family:'Inter',sans-serif;">${escapeHtml(user)}</td>
+                    <td style="padding:14px 16px;color:#6ecf8e;font-weight:700;">${escapeHtml(score)} pts</td>
+                    <td style="padding:14px 16px;color:#6b6560;">${escapeHtml(penalty)}</td>
                 </tr>`;
 
             try {

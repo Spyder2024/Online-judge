@@ -14,3 +14,4 @@
 | **ARENA-LAYOUT** | de9335f | Y | Y | 40/60 draggable split, metadata header, font size controls, fullscreen toggle |
 | **SEC-P0** | 9109d63 | Y | Y | Fixed SEC-01 (/run RCE removed), SEC-03 (Admin privilege escalation blocked), and SEC-04 (Submission IDOR protected) |
 | **SEC-P1** | caed23c | Y | Y | Fixed SEC-05 (Storage presigned authorization), SEC-06 (OAuth CSRF state), SEC-07 (Problem search NameError + Admin creation guard) |
+| **SEC-P2** | [pending] | Y | Y | Fixed SEC-02 (Compiler container unprivileged user + language guard), SEC-08 (Production SECRET_KEY validation), SEC-09 (Stored XSS escaping), SEC-10 (Strict CORS origins & regex) |

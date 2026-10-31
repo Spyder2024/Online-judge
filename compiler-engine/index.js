@@ -14,11 +14,18 @@ if (!fs.existsSync(TEMP_DIR)) {
   fs.mkdirSync(TEMP_DIR, { recursive: true });
 }
 
+const ALLOWED_LANGUAGES = ['cpp', 'py', 'java'];
+
 app.post('/run', (req, res) => {
   const { language, code, input } = req.body;
 
-  if (!code) {
+  if (!code || typeof code !== 'string') {
     return res.status(400).json({ output: '', error: 'No code provided.' });
+  }
+
+  const lang = (language || '').toLowerCase().trim();
+  if (!ALLOWED_LANGUAGES.includes(lang)) {
+    return res.status(400).json({ output: '', error: `Unsupported language. Allowed: ${ALLOWED_LANGUAGES.join(', ')}` });
   }
 
   const jobFolder = path.join(TEMP_DIR, crypto.randomBytes(8).toString('hex'));
@@ -28,26 +35,23 @@ app.post('/run', (req, res) => {
   fs.writeFileSync(inputPath, input || '');
 
   let fileExt = 'cpp';
-  if (language === 'py') fileExt = 'py';
-  else if (language === 'java') fileExt = 'java';
+  if (lang === 'py') fileExt = 'py';
+  else if (lang === 'java') fileExt = 'java';
 
-  const codePath = path.join(jobFolder, language === 'java' ? 'Main.java' : `solution.${fileExt}`);
+  const codePath = path.join(jobFolder, lang === 'java' ? 'Main.java' : `solution.${fileExt}`);
   fs.writeFileSync(codePath, code);
 
   let runCmd = '';
-  if (language === 'cpp') {
+  if (lang === 'cpp') {
     const outPath = path.join(jobFolder, 'solution.out');
     runCmd = `g++ "${codePath}" -o "${outPath}" && "${outPath}" < "${inputPath}"`;
-  } else if (language === 'py') {
+  } else if (lang === 'py') {
     runCmd = `python3 "${codePath}" < "${inputPath}"`;
-  } else if (language === 'java') {
+  } else if (lang === 'java') {
     runCmd = `javac "${codePath}" && java -cp "${jobFolder}" Main < "${inputPath}"`;
-  } else {
-    const outPath = path.join(jobFolder, 'solution.out');
-    runCmd = `g++ "${codePath}" -o "${outPath}" && "${outPath}" < "${inputPath}"`;
   }
 
-  exec(runCmd, { timeout: 10000, maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
+  exec(runCmd, { timeout: 10000, maxBuffer: 1024 * 1024 * 5, killSignal: 'SIGKILL' }, (err, stdout, stderr) => {
     // Cleanup temporary directory
     fs.rm(jobFolder, { recursive: true, force: true }, () => {});
 

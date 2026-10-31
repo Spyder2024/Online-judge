@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import List, Optional
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -47,6 +48,30 @@ class Settings(BaseSettings):
 
     GITHUB_CLIENT_ID: Optional[str] = None
     GITHUB_CLIENT_SECRET: Optional[str] = None
+
+    # CORS Allowed Origins
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "https://online-judge-iota-ashen.vercel.app",
+    ]
+
+    @model_validator(mode="after")
+    def validate_security_configuration(self) -> "Settings":
+        default_secret = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+        is_prod = self.ENVIRONMENT.lower() in ("production", "prod")
+        if is_prod:
+            if self.SECRET_KEY == default_secret:
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION: Default hardcoded SECRET_KEY is not permitted in production! Set SECRET_KEY in environment variables."
+                )
+            if len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION: SECRET_KEY must be at least 32 characters long in production."
+                )
+        return self
 
     model_config = SettingsConfigDict(
         env_file=".env",
