@@ -31,7 +31,8 @@ from __future__ import annotations
 
 import secrets
 import urllib.parse
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+import jwt
 from typing import Optional
 
 import httpx
@@ -162,6 +163,28 @@ async def get_enabled_providers():
 
 
 # ─────────────────────────────────────────────────────────────
+
+def _generate_oauth_state(provider: str) -> str:
+    """Generate a signed cryptographic state parameter with 15-minute expiration."""
+    payload = {
+        "provider": provider,
+        "nonce": secrets.token_hex(16),
+        "iat": datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def _verify_oauth_state(state: Optional[str], expected_provider: str) -> bool:
+    """Verify signed OAuth state token against SECRET_KEY and provider."""
+    if not state:
+        return False
+    try:
+        payload = jwt.decode(state, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return payload.get("provider") == expected_provider
+    except (jwt.PyJWTError, Exception):
+        return False
+
 # Google OAuth2
 # ─────────────────────────────────────────────────────────────
 
@@ -170,12 +193,14 @@ async def google_redirect():
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google OAuth is not configured.")
 
+    state = _generate_oauth_state("google")
     params = urllib.parse.urlencode({
         "client_id":     settings.GOOGLE_CLIENT_ID,
         "redirect_uri":  _google_redirect_uri(),
         "response_type": "code",
         "scope":         GOOGLE_SCOPES,
         "access_type":   "online",
+        "state":         state,
     })
     return RedirectResponse(url=f"{GOOGLE_AUTH_URL}?{params}", status_code=302)
 
@@ -183,11 +208,15 @@ async def google_redirect():
 @router.get("/google/callback", summary="Google OAuth2 callback handler")
 async def google_callback(
     code: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     if error or not code:
         return _error_redirect(f"Google denied access or no code: {error}")
+
+    if not _verify_oauth_state(state, "google"):
+        return _error_redirect("Invalid or expired OAuth state parameter (CSRF protection)")
 
     async with httpx.AsyncClient(timeout=15.0) as client:
         # Exchange authorization code for access token
@@ -239,10 +268,12 @@ async def github_redirect():
     if not settings.GITHUB_CLIENT_ID:
         raise HTTPException(status_code=503, detail="GitHub OAuth is not configured.")
 
+    state = _generate_oauth_state("github")
     params = urllib.parse.urlencode({
         "client_id":    settings.GITHUB_CLIENT_ID,
         "redirect_uri": _github_redirect_uri(),
         "scope":        "read:user user:email",
+        "state":        state,
     })
     return RedirectResponse(url=f"{GITHUB_AUTH_URL}?{params}", status_code=302)
 
@@ -250,11 +281,15 @@ async def github_redirect():
 @router.get("/github/callback", summary="GitHub OAuth2 callback handler")
 async def github_callback(
     code: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     if error or not code:
         return _error_redirect(f"GitHub denied access or no code: {error}")
+
+    if not _verify_oauth_state(state, "github"):
+        return _error_redirect("Invalid or expired OAuth state parameter (CSRF protection)")
 
     async with httpx.AsyncClient(timeout=15.0) as client:
         # Exchange code for access token

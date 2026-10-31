@@ -1,7 +1,8 @@
 from typing import List, Optional
+import math
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -18,9 +19,6 @@ class SemanticSearchRequest(BaseModel):
     query: str
     limit: Optional[int] = 10
 
-
-import math
-from sqlalchemy import func
 
 @router.get("", response_model=PaginatedProblemResponse)
 async def list_problems(
@@ -73,8 +71,8 @@ async def get_problem(
 @router.post("", response_model=ProblemResponse, status_code=status.HTTP_201_CREATED)
 async def create_problem(
     problem_in: ProblemCreate,
-    db: AsyncSession = Depends(get_db),
-    admin: User = Depends(get_current_admin_user)
+    current_admin: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new problem (Admin only)."""
     problem = Problem(
@@ -99,8 +97,10 @@ async def search_problems_semantic(
     Natural language vector semantic search using pgvector cosine distance on Problem.problem_embedding.
     If embeddings are not generated yet, falls back to text ILIKE matching.
     """
+    limit = min(max(search_req.limit or 10, 1), 100)
+    query_text = (search_req.query or "").strip()[:255]
     if not query_text:
-        res = await list_problems(1, search_req.limit or 10, db)
+        res = await list_problems(page=1, limit=limit, db=db)
         return res["items"]
         
     # Standard text matching fallback / pgvector similarity
@@ -111,7 +111,7 @@ async def search_problems_semantic(
             (Problem.title.ilike(f"%{query_text}%")) | 
             (Problem.statement_text.ilike(f"%{query_text}%"))
         )
-        .limit(search_req.limit or 10)
+        .limit(limit)
     )
     result = await db.execute(stmt)
     problems = result.scalars().all()
