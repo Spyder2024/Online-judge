@@ -2,7 +2,7 @@ import enum
 from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Enum, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, SoftDeleteMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.submission import Submission
@@ -16,7 +16,7 @@ class UserRole(str, enum.Enum):
     STUDENT = "Student"
 
 
-class User(Base, TimestampMixin):
+class User(Base, TimestampMixin, SoftDeleteMixin):
     """
     Users table representing system users: Admins, Contestants, and Students.
     """

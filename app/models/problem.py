@@ -1,9 +1,9 @@
 import enum
 from typing import TYPE_CHECKING, List
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Enum, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, SoftDeleteMixin, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.submission import Submission
@@ -53,11 +53,14 @@ class Tag(Base):
     )
 
 
-class Problem(Base, TimestampMixin):
+class Problem(Base, TimestampMixin, SoftDeleteMixin):
     """
     Problems table with 1536-dimensional embedding column for semantic search and clustering.
     """
     __tablename__ = "problems"
+    __table_args__ = (
+        Index("ix_problems_difficulty_created", "difficulty", "created_at"),
+    )
 
     problem_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True

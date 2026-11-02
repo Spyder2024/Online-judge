@@ -1,7 +1,7 @@
 import enum
 from typing import TYPE_CHECKING, Optional
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
@@ -31,6 +31,10 @@ class Submission(Base, TimestampMixin):
     Submissions table capturing user code submissions and 1536-dimensional code vector embeddings.
     """
     __tablename__ = "submissions"
+    __table_args__ = (
+        Index("ix_submissions_user_problem_created", "user_id", "problem_id", "created_at"),
+        Index("ix_submissions_verdict_created", "verdict", "created_at"),
+    )
 
     submission_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True
