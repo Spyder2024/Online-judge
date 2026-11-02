@@ -59,36 +59,6 @@ async def signup(
     return UserResponse.model_validate(new_user)
 
 
-@router.get(
-    "/cleanup-loki",
-    summary="Purge test account lokihd708@gmail.com",
-    include_in_schema=False,
-)
-async def cleanup_loki(db: AsyncSession = Depends(get_db)):
-    import sqlalchemy as sa
-    statements = [
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;",
-        "ALTER TABLE problems ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;",
-        "CREATE INDEX IF NOT EXISTS ix_problems_difficulty_created ON problems (difficulty, created_at DESC);",
-        "CREATE INDEX IF NOT EXISTS ix_submissions_user_problem_created ON submissions (user_id, problem_id, created_at DESC);",
-        "CREATE INDEX IF NOT EXISTS ix_submissions_verdict_created ON submissions (verdict, created_at DESC);",
-        "DELETE FROM submissions WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');",
-        "DELETE FROM user_profiles WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');",
-        "DELETE FROM bookmarked_problems WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');",
-        "DELETE FROM users WHERE username = 'lokihd708@gmail.com';",
-    ]
-    logs = []
-    for sql in statements:
-        try:
-            await db.execute(sa.text(sql))
-            await db.commit()
-            logs.append(f"OK: {sql[:35]}")
-        except Exception as e:
-            await db.rollback()
-            logs.append(f"SKIPPED ({type(e).__name__}): {sql[:35]}")
-    return {"status": "ok", "logs": logs}
-
-
 @router.post(
     "/login",
     response_model=Token,

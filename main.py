@@ -38,13 +38,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             await conn.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_problems_difficulty_created ON problems (difficulty, created_at DESC);"))
             await conn.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_submissions_user_problem_created ON submissions (user_id, problem_id, created_at DESC);"))
             await conn.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_submissions_verdict_created ON submissions (verdict, created_at DESC);"))
-            # Clean up requested user account
-            await conn.execute(sa.text("DELETE FROM submissions WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
-            await conn.execute(sa.text("DELETE FROM user_profiles WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
-            await conn.execute(sa.text("DELETE FROM bookmarked_problems WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
-            await conn.execute(sa.text("DELETE FROM contest_participants WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
-            await conn.execute(sa.text("DELETE FROM users WHERE username = 'lokihd708@gmail.com';"))
-            logger.info("Database schema migration and user cleanup completed successfully.")
+            logger.info("Database schema migration check completed successfully.")
     except Exception as e:
         logger.warning("Database schema migration check skipped or failed", error=str(e))
 
