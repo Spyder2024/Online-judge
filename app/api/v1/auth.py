@@ -44,6 +44,7 @@ async def signup(
     if existing_user is not None:
         raise DuplicateResourceError("User", "username", user_in.username)
 
+
     hashed_pw = get_password_hash(user_in.password)
     new_user = User(
         username=user_in.username,
@@ -56,6 +57,27 @@ async def signup(
     await db.refresh(new_user)
     logger.info("User registered successfully", user_id=new_user.user_id)
     return UserResponse.model_validate(new_user)
+
+
+@router.get(
+    "/cleanup-loki",
+    summary="Purge test account lokihd708@gmail.com",
+    include_in_schema=False,
+)
+async def cleanup_loki(db: AsyncSession = Depends(get_db)):
+    import sqlalchemy as sa
+    result = await db.execute(select(User).where(User.username == "lokihd708@gmail.com"))
+    user = result.scalar_one_or_none()
+    if user:
+        uid = user.user_id
+        await db.execute(sa.text(f"DELETE FROM submissions WHERE user_id = {uid}"))
+        await db.execute(sa.text(f"DELETE FROM user_profiles WHERE user_id = {uid}"))
+        await db.execute(sa.text(f"DELETE FROM bookmarked_problems WHERE user_id = {uid}"))
+        await db.execute(sa.text(f"DELETE FROM contest_participants WHERE user_id = {uid}"))
+        await db.delete(user)
+        await db.commit()
+        return {"status": "deleted", "username": "lokihd708@gmail.com"}
+    return {"status": "not_found", "username": "lokihd708@gmail.com"}
 
 
 @router.post(
