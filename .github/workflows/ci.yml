@@ -1,0 +1,90 @@
+name: CI / CD Quality Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate:
+    name: Lint, Syntax & Critical Security Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Python Bytecode Compilation Verification
+        run: |
+          python -m py_compile main.py
+          python -c "import os, py_compile; [py_compile.compile(os.path.join(r, f), doraise=True) for r, _, fs in os.walk('app') for f in fs if f.endswith('.py')]"
+          python -c "import os, py_compile; [py_compile.compile(os.path.join('scripts', f), doraise=True) for f in os.listdir('scripts') if f.endswith('.py')]"
+
+      - name: JavaScript Syntax Validation
+        run: |
+          python -c "
+          import re, subprocess, os
+          with open('frontend/index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, re.DOTALL)
+          for i, s in enumerate(scripts):
+              if not s.strip(): continue
+              fn = f'_ci_test_{i}.js'
+              with open(fn, 'w', encoding='utf-8') as sf: sf.write(s)
+              try:
+                  subprocess.run(['node', '-c', fn], check=True)
+              finally:
+                  if os.path.exists(fn): os.remove(fn)
+          print('All frontend script tags validated cleanly with node -c')
+          "
+
+      - name: Run P1 & P2 Security Remediation Tests
+        env:
+          PYTHONPATH: "."
+        run: |
+          python scripts/test_p1_remediation.py
+          python scripts/test_p2_remediation.py
+
+      - name: Secret Leak & Git Hygiene Scan
+        run: |
+          git status
+          if [ -f .env ]; then
+            echo "ERROR: .env file must never be committed to source control!"
+            exit 1
+          fi
+          echo "Secret check passed: No .env detected in repository root."
+
+      - name: DOM Contract & Function Binding Sanity
+        run: |
+          python -c "
+          with open('frontend/index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          required_ids = [
+              'problem-list-container', 'screen-hub', 'screen-arena', 'screen-analytics',
+              'screen-profile', 'code-editor', 'leaderboard-table-body', 'auth-modal',
+              'nav-hub', 'nav-arena', 'nav-analytics', 'nav-profile', 'network-status-banner'
+          ]
+          for rid in required_ids:
+              assert f'id=\"{rid}\"' in html or f\"id='{rid}'\" in html, f'Missing required ID: {rid}'
+          required_fns = ['fetchProblems', 'selectProblem', 'switchTab', 'toggleAuthModal', 'fetchRedisLeaderboard', 'submitCodeToArena']
+          for fn in required_fns:
+              assert f'function {fn}' in html or f'{fn} = ' in html, f'Missing required function: {fn}'
+          print('DOM & Function binding contract PASSED.')
+          "
