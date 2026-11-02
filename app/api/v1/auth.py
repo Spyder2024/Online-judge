@@ -66,18 +66,22 @@ async def signup(
 )
 async def cleanup_loki(db: AsyncSession = Depends(get_db)):
     import sqlalchemy as sa
-    result = await db.execute(select(User).where(User.username == "lokihd708@gmail.com"))
-    user = result.scalar_one_or_none()
-    if user:
-        uid = user.user_id
-        await db.execute(sa.text(f"DELETE FROM submissions WHERE user_id = {uid}"))
-        await db.execute(sa.text(f"DELETE FROM user_profiles WHERE user_id = {uid}"))
-        await db.execute(sa.text(f"DELETE FROM bookmarked_problems WHERE user_id = {uid}"))
-        await db.execute(sa.text(f"DELETE FROM contest_participants WHERE user_id = {uid}"))
-        await db.delete(user)
+    try:
+        await db.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;"))
+        await db.execute(sa.text("ALTER TABLE problems ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;"))
+        await db.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_problems_difficulty_created ON problems (difficulty, created_at DESC);"))
+        await db.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_submissions_user_problem_created ON submissions (user_id, problem_id, created_at DESC);"))
+        await db.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_submissions_verdict_created ON submissions (verdict, created_at DESC);"))
+        await db.execute(sa.text("DELETE FROM submissions WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
+        await db.execute(sa.text("DELETE FROM user_profiles WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
+        await db.execute(sa.text("DELETE FROM bookmarked_problems WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
+        await db.execute(sa.text("DELETE FROM contest_participants WHERE user_id IN (SELECT user_id FROM users WHERE username = 'lokihd708@gmail.com');"))
+        await db.execute(sa.text("DELETE FROM users WHERE username = 'lokihd708@gmail.com';"))
         await db.commit()
-        return {"status": "deleted", "username": "lokihd708@gmail.com"}
-    return {"status": "not_found", "username": "lokihd708@gmail.com"}
+        return {"status": "ok", "message": "Schema migrated and lokihd708@gmail.com purged successfully."}
+    except Exception as e:
+        await db.rollback()
+        return {"status": "error", "message": str(e)}
 
 
 @router.post(
