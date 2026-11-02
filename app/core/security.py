@@ -41,6 +41,7 @@ def create_access_token(
     to_encode: Dict[str, Any] = {
         "sub": str(subject),
         "role": role,
+        "type": "access",
         "exp": expire,
         "iat": datetime.now(timezone.utc),
     }
@@ -57,3 +58,37 @@ def decode_access_token(token: str) -> Dict[str, Any]:
     return jwt.decode(
         token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
     )
+
+
+def create_refresh_token(
+    subject: Union[str, Any],
+    expires_delta: Optional[timedelta] = None,
+) -> str:
+    """
+    Create a long-lived JWT refresh token (default 30 days) containing subject claim and token type.
+    """
+    if expires_delta is not None:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(days=30)
+    to_encode: Dict[str, Any] = {
+        "sub": str(subject),
+        "type": "refresh",
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
+
+
+def decode_refresh_token(token: str) -> Dict[str, Any]:
+    """
+    Decode and validate a JWT refresh token. Raises jwt.PyJWTError on failure.
+    """
+    payload = jwt.decode(
+        token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+    )
+    if payload.get("type") != "refresh":
+        raise jwt.PyJWTError("Invalid token type: expected refresh token")
+    return payload

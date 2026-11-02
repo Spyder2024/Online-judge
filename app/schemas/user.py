@@ -34,8 +34,13 @@ class UserResponse(UserBase):
 
 class Token(BaseModel):
     access_token: str = Field(..., description="JWT access token string")
+    refresh_token: Optional[str] = Field(None, description="Long-lived JWT refresh token string")
     token_type: str = Field(default="bearer", description="Token authentication type")
     expires_in: int = Field(..., description="Token expiration duration in seconds")
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(..., description="Valid JWT refresh token")
 
 
 class TokenPayload(BaseModel):

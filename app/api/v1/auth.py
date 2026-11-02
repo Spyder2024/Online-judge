@@ -1,4 +1,5 @@
 from datetime import timedelta
+import jwt
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
@@ -8,9 +9,15 @@ from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.exceptions import AuthenticationError, DuplicateResourceError
-from app.core.security import create_access_token, get_password_hash, verify_password
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_refresh_token,
+    get_password_hash,
+    verify_password,
+)
 from app.models.user import User, UserRole
-from app.schemas.user import Token, UserCreate, UserLogin, UserResponse
+from app.schemas.user import RefreshTokenRequest, Token, UserCreate, UserLogin, UserResponse
 
 logger = get_logger(__name__)
 
@@ -55,7 +62,7 @@ async def signup(
     "/login",
     response_model=Token,
     status_code=status.HTTP_200_OK,
-    summary="Authenticate credentials and obtain JWT access token",
+    summary="Authenticate credentials and obtain JWT access & refresh tokens",
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -63,7 +70,7 @@ async def login(
 ) -> Token:
     """
     OAuth2 compatible login route using form data (username & password).
-    Returns a JWT Bearer access token valid for configured expiration duration.
+    Returns a JWT Bearer access token and a long-lived refresh token.
     """
     logger.info("Authenticating login attempt", username=form_data.username)
     result = await db.execute(select(User).where(User.username == form_data.username))
@@ -78,9 +85,11 @@ async def login(
         role=user.role.value,
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
+    refresh_tok = create_refresh_token(subject=user.user_id)
     logger.info("Login successful", user_id=user.user_id)
     return Token(
         access_token=access_token,
+        refresh_token=refresh_tok,
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
@@ -112,8 +121,50 @@ async def login_json(
         role=user.role.value,
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
+    refresh_tok = create_refresh_token(subject=user.user_id)
     return Token(
         access_token=access_token,
+        refresh_token=refresh_tok,
+        token_type="bearer",
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
+@router.post(
+    "/refresh",
+    response_model=Token,
+    status_code=status.HTTP_200_OK,
+    summary="Exchange refresh token for a new access token",
+)
+async def refresh_token(
+    payload: RefreshTokenRequest,
+    db: AsyncSession = Depends(get_db),
+) -> Token:
+    """
+    Validate a long-lived refresh token and issue a fresh access token and rotated refresh token.
+    """
+    try:
+        decoded = decode_refresh_token(payload.refresh_token)
+        user_id = int(decoded["sub"])
+    except (jwt.PyJWTError, KeyError, ValueError) as e:
+        raise AuthenticationError(f"Invalid or expired refresh token: {e}")
+
+    result = await db.execute(select(User).where(User.user_id == user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise AuthenticationError("User associated with token no longer exists")
+
+    new_access_token = create_access_token(
+        subject=user.user_id,
+        role=user.role.value,
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    new_refresh_tok = create_refresh_token(subject=user.user_id)
+
+    logger.info("Refreshed access token successfully", user_id=user.user_id)
+    return Token(
+        access_token=new_access_token,
+        refresh_token=new_refresh_tok,
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )

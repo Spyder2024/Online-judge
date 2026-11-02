@@ -29,6 +29,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as e:
         logger.warning("Redis pool initialization skipped or failed during startup", error=str(e))
 
+    try:
+        # Ensure database schema compatibility for soft deletes and composite indexes
+        import sqlalchemy as sa
+        async with async_engine.begin() as conn:
+            await conn.execute(sa.text("ALTER TABLE problems ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;"))
+            await conn.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;"))
+            await conn.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_problems_difficulty_created ON problems (difficulty, created_at DESC);"))
+            await conn.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_submissions_user_problem_created ON submissions (user_id, problem_id, created_at DESC);"))
+            await conn.execute(sa.text("CREATE INDEX IF NOT EXISTS ix_submissions_verdict_created ON submissions (verdict, created_at DESC);"))
+            logger.info("Database schema migration check completed successfully.")
+    except Exception as e:
+        logger.warning("Database schema migration check skipped or failed", error=str(e))
+
     yield
 
     logger.info("Shutting down AI-Enhanced Online Judge Platform backend...")
