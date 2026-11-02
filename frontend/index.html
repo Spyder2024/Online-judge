@@ -631,6 +631,9 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
+    <!-- Offline / Network Status Banner (Layer 6) -->
+    <div id="network-status-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;text-align:center;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.5);transition:all 0.3s ease;"></div>
+
     <!-- Ambient background orbs -->
     <div class="ambient-bg">
         <div class="orb orb-1"></div>
@@ -1114,13 +1117,14 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                                     <button onclick="selectTestCaseTab(1)" id="case-pill-1" style="padding:3px 10px;font-size:11px;font-weight:500;border-radius:6px;background:transparent;color:var(--text-secondary);border:1px solid transparent;cursor:pointer;font-family:\'JetBrains Mono\',monospace;">Case 2</button>
                                     <button onclick="selectTestCaseTab(2)" id="case-pill-2" style="padding:3px 10px;font-size:11px;font-weight:500;border-radius:6px;background:transparent;color:var(--text-secondary);border:1px solid transparent;cursor:pointer;font-family:\'JetBrains Mono\',monospace;">Case 3</button>
                                 </div>
-                                <span style="font-size:11px;color:var(--text-secondary);font-family:'Inter',sans-serif;">Sample test cases</span>
+                                <span id="testcase-mode-label" style="font-size:11px;color:var(--text-secondary);font-family:'Inter',sans-serif;">Sample test cases</span>
                             </div>
 
                             <div style="display:flex;flex-direction:column;gap:8px;">
                                 <div style="display:flex;flex-direction:column;gap:4px;">
                                     <label style="font-size:11px;font-family:\'JetBrains Mono\',monospace;color:var(--text-secondary);font-weight:600;text-transform:uppercase;">Input Parameters</label>
                                     <div id="testcase-input-display" style="padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--text-primary);white-space:pre-wrap;">nums = [2, 7, 11, 15], target = 9</div>
+                                    <textarea id="testcase-custom-input" placeholder="Enter custom input parameters (e.g. nums = [3, 2, 4], target = 6)..." style="display:none;width:100%;height:60px;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--text-primary);resize:none;outline:none;line-height:1.5;"></textarea>
                                 </div>
                                 <div style="display:flex;flex-direction:column;gap:4px;">
                                     <label style="font-size:11px;font-family:\'JetBrains Mono\',monospace;color:var(--text-secondary);font-weight:600;text-transform:uppercase;">Expected Output</label>
@@ -2622,6 +2626,59 @@ def twoSum(nums: list[int], target: int) -> list[int]:
         let currentTestCaseIndex = 0;
         let currentProblemCases = [];
 
+        let isCustomTestCaseActive = false;
+
+        function selectCustomTestCaseTab() {
+            isCustomTestCaseActive = true;
+            if (currentProblemCases) {
+                currentProblemCases.forEach((_, i) => {
+                    const btn = document.getElementById(`case-pill-${i}`);
+                    if (btn) {
+                        btn.style.background = 'transparent';
+                        btn.style.color = 'var(--text-secondary)';
+                        btn.style.borderColor = 'transparent';
+                        btn.style.fontWeight = '500';
+                    }
+                });
+            }
+            const customBtn = document.getElementById('case-pill-custom');
+            if (customBtn) {
+                customBtn.style.background = 'var(--bg-elevated)';
+                customBtn.style.color = 'var(--primary-accent)';
+                customBtn.style.borderColor = 'var(--border)';
+                customBtn.style.fontWeight = '600';
+            }
+            const inpDisplay = document.getElementById('testcase-input-display');
+            const customInput = document.getElementById('testcase-custom-input');
+            const expDisplay = document.getElementById('testcase-expected-display');
+            const modeLabel = document.getElementById('testcase-mode-label');
+
+            if (inpDisplay) inpDisplay.style.display = 'none';
+            if (customInput) customInput.style.display = 'block';
+            if (expDisplay) expDisplay.innerText = 'Custom execution (evaluated during pre-flight)';
+            if (modeLabel) modeLabel.innerText = 'Interactive custom input';
+        }
+
+        // Network Connectivity Watcher (Layer 6)
+        window.addEventListener('offline', () => {
+            const banner = document.getElementById('network-status-banner');
+            if (banner) {
+                banner.style.display = 'block';
+                banner.style.background = 'rgba(239, 68, 68, 0.95)';
+                banner.style.color = '#ffffff';
+                banner.innerHTML = '<strong>Offline:</strong> Internet connection dropped. Drafts remain saved locally in your browser. Submissions will pause until reconnected.';
+            }
+        });
+        window.addEventListener('online', () => {
+            const banner = document.getElementById('network-status-banner');
+            if (banner) {
+                banner.style.background = 'rgba(16, 185, 129, 0.95)';
+                banner.style.color = '#ffffff';
+                banner.innerHTML = '<strong>Online:</strong> Connection restored. All judge services are reachable.';
+                setTimeout(() => { if (banner) banner.style.display = 'none'; }, 3500);
+            }
+        });
+
         function loadProblemTestCases(problem) {
             const pid = Number(problem?.id || currentSelectedProblemId || 1);
             let cases = PROBLEM_SAMPLE_TESTCASES[pid];
@@ -2886,7 +2943,12 @@ def twoSum(nums: list[int], target: int) -> list[int]:
                 badge.innerText = 'Testing...';
             }
             if (consoleLog) {
-                consoleLog.innerHTML = `<p style="color:var(--text-secondary);">&gt; [PRE-FLIGHT] Executing code against sample test cases...</p>`;
+                if (isCustomTestCaseActive) {
+                    const customVal = document.getElementById('testcase-custom-input')?.value || "";
+                    consoleLog.innerHTML = `<p style="color:var(--primary-accent);">&gt; [PRE-FLIGHT] Executing pre-flight with custom testcase input: ${escapeHtml(customVal || "(default parameters)")}</p>`;
+                } else {
+                    consoleLog.innerHTML = `<p style="color:var(--text-secondary);">&gt; [PRE-FLIGHT] Executing code against sample test cases...</p>`;
+                }
             }
 
             const cleanCode = code.replace(/#.*$/gm, '').replace(/\s+/g, ' ').trim();
@@ -3003,9 +3065,21 @@ def twoSum(nums: list[int], target: int) -> list[int]:
 
         async function submitCodeToArena() {
             const code       = getCodeValue();
-            const lang       = document.getElementById('language-select').value;
             const consoleLog = document.getElementById('ws-console-log');
             const badge      = document.getElementById('ws-status-badge');
+
+            if (!code || !code.trim()) {
+                switchConsoleTab('result');
+                if (badge) {
+                    badge.className = 'ws-badge-error';
+                    badge.innerText = 'Empty Solution';
+                }
+                if (consoleLog) {
+                    consoleLog.innerHTML = `<p style="color:var(--error);">&gt; [Validation Error] Cannot submit an empty code solution. Please write your algorithm first.</p>`;
+                }
+                return;
+            }
+            const lang       = document.getElementById('language-select').value;
             const token      = localStorage.getItem('access_token');
 
             if (wsTimeoutTimer) clearTimeout(wsTimeoutTimer);
