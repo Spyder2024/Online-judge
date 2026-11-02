@@ -2270,6 +2270,7 @@ def twoSum(nums: list[int], target: int) -> list[int]:
             const token = localStorage.getItem('access_token');
             const headers = {};
             if (token) headers['Authorization'] = `Bearer ${token}`;
+            headers['Idempotency-Key'] = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('idemp-' + Date.now() + '-' + Math.random());
 
             try {
                 const resp = await fetch('/api/v1/profiles/me', { headers });
