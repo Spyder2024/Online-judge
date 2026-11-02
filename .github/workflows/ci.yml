@@ -62,6 +62,12 @@ jobs:
           python scripts/test_p1_remediation.py
           python scripts/test_p2_remediation.py
 
+      - name: Run Core Unit Test Suite
+        env:
+          PYTHONPATH: "."
+        run: |
+          python -m unittest discover tests -v
+
       - name: Secret Leak & Git Hygiene Scan
         run: |
           git status

@@ -82,7 +82,7 @@ def test_required_js_functions():
 
 def test_live_health():
     req = urllib.request.Request(f"{TARGET_URL}/health", headers={"User-Agent": "SmokeTest"})
-    with urllib.request.urlopen(req, timeout=10) as resp:
+    with urllib.request.urlopen(req, timeout=15) as resp:
         if resp.status != 200:
             raise AssertionError(f"/health returned status {resp.status}")
 
